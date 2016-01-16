@@ -33,7 +33,7 @@
 
 #### 2.1 범주형 자료의 요약
 
-{% highlight r %}
+```
 blood <- c("B","A","B","A","A","B","O","A","A","A","O","B","AB","B","AB", "AB","A","A","O","AB","O","A","B","O","B","B","A","A","O","A", "A","AB","B","B","O","B","B","B","A","AB","A","A","B","O","B", "B","O","B","O","B","A","A","AB","A","A")
 
 cnt <- table(blood)
@@ -41,7 +41,7 @@ prop <- prop.table(cnt)
 cbind(cnt, prop)
 barplot(cnt)
 pie(cnt)
-{% endhighlight %}
+```
 
 #### 2.2 이산형 자료의 요약
 
