@@ -1,0 +1,28 @@
+## K Nearest Neighbor
+
+---
+
+#### K Nearest Neighbor Algorithm(kNN 알고리즘, k 최근접 이웃 알고리즘)  
+
+분류 분석(Classification)은 지도 학습(Supervised Learning) 중 하나로, 데이터가 어떤 카테고리에 속할 지 예측하는 기법이다. 그 중에서 kNN 알고리즘은 어떤 데이터에 대해 근접해 있는 $k$ 개의 데이터를 기반으로 해당 데이터를 분류하는 알고리즘이다. kNN 알고리즘은 매우 단순하지만 실용적이고, 다음과 같은 영역에서 사용된 바 있다.
+
+- 안면 인식 및 글자 인식 등의 컴퓨터 비전 분야
+- 개인화된 추천
+- 특정 단백질이나 질병을 추출하는 데 사용되는 유전자 데이터의 패턴 식별
+
+다음의 이미지가 kNN 알고리즘을 잘 나타내고 있다.
+
+![kNN Algorithm, IBM](http://www-01.ibm.com/support/knowledgecenter/api/content/nl/ko/SSLVMB_21.0.0/com.ibm.spss.statistics.help/images/out_knn_overview.gif)
+
+두 이미지는 kNN 알고리즘의 예제이다. 첫 번째 이미지는 $k = 5$ 인 경우인데, 가장 가까운 다섯 개의 데이터를 기반으로 해당 데이터를 분류한다. 이 경우, 파란색 세 개, 회색 두 개이므로 해당 데이터는 파란색으로 분류된다. 하지만 $k$가 달라진다면 해당 데이터는 다른 결과를 얻을 수 있다.
+오른쪽 이미지는 $k = 9$인 경우다. 파란색 세 개, 회색 여섯 개이므로 해당 데이터는 회색으로 분류된다.[^1]
+위 이미지에서 보듯이 kNN 알고리즘은 이해하기 쉬운 알고리즘이지만, $k$ 값에 굉장히 민감함을 알 수 있다.
+최적의 $k$ 값을 선택하는 것은 굉장히 데이터에 의존적이다. 또한 닫힌 형태(Closed form)로 식이 존재하기보다는 보통 선험적(heuristic)으로 $k$ 값을 선택하게 된다.
+
+#### Reference
+1. Lanz, Brett. *Machine Learning with R, 2nd Edition*. PACKT, 2015
+2. http://www.analyticsvidhya.com/blog/2014/10/introduction-k-neighbours-algorithm-clustering/
+2. http://www.analyticsvidhya.com/blog/2015/08/learning-concept-knn-algorithms-programming/
+3. https://www.datacamp.com/community/tutorials/machine-learning-in-r
+
+[^1]: 일반적으로 명목형 데이터를 다루지만, 수치형 데이터의 경우 $k$개 데이터의 평균을 이용해 데이터를 분류한다.
