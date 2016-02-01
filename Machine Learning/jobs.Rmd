@@ -1,8 +1,8 @@
 ---
 title: "Textmining with tm package"
 author: "Jaeyoon Han"
-date: "2016년 2월 1일"
-output: html_document
+date: "2016-02-01"
+output: pdf_document
 ---
 
 ```{r}
@@ -10,10 +10,10 @@ library(tm)
 library(magrittr)
 library(SnowballC)
 
-setwd("~/KHURStudy/Machine Learning/")
-
 jobs <- readLines("./data/steve.txt")
-jobs <- iconv(jobs,"WINDOWS-1252","UTF-8") # 맥 사용자만 하시면 됩니다.
+
+# For Mac
+jobs <- iconv(jobs,"WINDOWS-1252","UTF-8") 
 
 head(jobs)
 
@@ -25,6 +25,8 @@ steve_jobs <- jobs %>%
         stemDocument %>%
         stripWhitespace
 
+head(steve_jobs)
+
 write(unlist(steve_jobs), "./data/jobs.txt")
 
 jobs <- read.table("./data/jobs.txt", fill = TRUE)
@@ -34,6 +36,8 @@ jobs_words <- c()
 for(i in 1 : length(jobs)){
         jobs_words <- c(jobs_words, as.character(jobs[[i]]))
 }
+
+head(jobs_words, 50)
 
 write(unlist(jobs_words), "./data/jobs_words.txt")
 jobs_words <- read.table("./data/jobs_words.txt")
