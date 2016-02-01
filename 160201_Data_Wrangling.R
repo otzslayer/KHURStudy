@@ -14,7 +14,6 @@ job <- read.csv("/Users/Han/Google Drive/Job Project/Data/job.csv", header = T,
 # -------------------------------------------------------------------------
 
 
-
 # [Data Cleansing and Wrangling] ------------------------------------------
 
 # To explore data
