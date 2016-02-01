@@ -10,6 +10,8 @@ library(tm)
 library(magrittr)
 library(SnowballC)
 
+setwd("~/KHURStudy/Machine Learning/")
+
 jobs <- readLines("./data/steve.txt")
 jobs <- iconv(jobs,"WINDOWS-1252","UTF-8") # 맥 사용자만 하시면 됩니다.
 
