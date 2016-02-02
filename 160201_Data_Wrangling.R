@@ -2,6 +2,12 @@
 library(dplyr)
 library(ggplot2)
 library(reshape2)
+library(randomForest)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+library(rpart)
+library(survival)
 # -------------------------------------------------------------------------
 
 
@@ -164,8 +170,7 @@ jobSurvival$ID <- 1 : nrow(jobSurvival)
 # 취업 : 1, 미취업 : 0
 jobSurvival$isEmployed <- ifelse(jobSurvival$isEmployed == "취업", 1, 0)
 
-library(survival)
-
+rm(isEmployed)
 attach(jobSurvival)
 
 S <- Surv(time = graduate_year - graduate_year,
@@ -178,15 +183,14 @@ plot(survfit(surv_model), xlim = c(0, 20))
 
 
 # Random Forest -----------------------------------------------------------
-library(randomForest)
-library(rattle)
-library(rpart.plot)
-library(RColorBrewer)
 
 Formula <- isEmployed ~ GPA + isLiberal + isMinor + isMultiMajor + term_time + toeic
 
 rf <- randomForest(Formula, data = jobSurvival, ntree = 100, proximity = TRUE)
 varImpPlot(rf)
+
+
+# Decision Tree -----------------------------------------------------------
 
 dt <- rpart(Formula, data = jobSurvival, control = rpart.control (minsplit=10))
 dt
