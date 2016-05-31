@@ -1,3 +1,6 @@
+---
+output: word_document
+---
 ## K Nearest Neighbor
 
 ---
@@ -11,8 +14,6 @@
 - 특정 단백질이나 질병을 추출하는 데 사용되는 유전자 데이터의 패턴 식별
 
 다음의 이미지가 kNN 알고리즘을 잘 나타내고 있다.
-
-![kNN Algorithm, IBM](http://www-01.ibm.com/support/knowledgecenter/api/content/nl/ko/SSLVMB_21.0.0/com.ibm.spss.statistics.help/images/out_knn_overview.gif)
 
 두 이미지는 kNN 알고리즘의 예제이다. 첫 번째 이미지는 $k = 5$ 인 경우인데, 가장 가까운 다섯 개의 데이터를 기반으로 해당 데이터를 분류한다. 이 경우, 파란색 세 개, 회색 두 개이므로 해당 데이터는 파란색으로 분류된다. 하지만 $k$가 달라진다면 해당 데이터는 다른 결과를 얻을 수 있다.
 오른쪽 이미지는 $k = 9$인 경우다. 파란색 세 개, 회색 여섯 개이므로 해당 데이터는 회색으로 분류된다.[^1]
@@ -40,8 +41,6 @@ $$
 d_m(p, q) = \| p - q \|_1 =  \sum^n_{i = 1} |p_i - q_i|
 $$
 식에서 알 수 있듯이, 각 좌표 사이의 절대값을 모두 더한 값이다. 유클리드 거리와 맨해튼 거리의 비교는 다음의 이미지로 대체한다.
-
-![Difference between Euclidean distance and Manhattan distance](https://upload.wikimedia.org/wikipedia/commons/0/08/Manhattan_distance.svg)
 
 이외에도 코사인 유사도(Cosine similarity), 피어슨 상관계수(Pearson correaltion) 등이 사용된다. 본 실습에서는 간단하게 유클리드 거리를 사용하도록 한다. 다른 거리 개념에 대해서는 추후에 다시 다루도록 한다.
 
