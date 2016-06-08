@@ -1,0 +1,349 @@
+---
+title: 'Titanic : Who Survived?'
+output:
+  html_document:
+    highlight: pygments
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_knit$set(root.dir = "~/Google Drive/R Lecture/Week 5/")
+```
+
+## 5주차 : 타이타닉 생존자 예측하기
+
+이번 주에는 선형회귀법과 랜덤포레스트를 활용하여 타이타닉 생존자의 정보를 토대로 생존자를 예측한다. 사용할 라이브러리는 다음과 같다.
+
+```{r}
+# install.packages("rpart")
+# install.packages("randomForest")
+library(rpart)                  # Predict age
+library(randomForest)           # Random Forest
+library(dplyr)                  # Manipulating the data
+library(ggplot2)                # Visualizing the data
+```
+
+### 1. Collecting The Data
+
+데이터는 `http://biostat.mc.vanderbilt.edu/wiki/Main/DataSets`에서 다운로드 하였으며, 본 강의에 맞게 데이터를 일부 수정했다.
+
+```{r}
+titanic <- read.csv("titanic.csv", stringsAsFactors = FALSE)
+titanic <- tbl_df(titanic)
+head(titanic)
+```
+
+
+### 2. Data Exploration & Preprocessing
+저번주 선형회귀법 실습 때와 다르게 데이터가 굉장히 지저분하다. 결측값도 굉장히 많고, 추가적인 정보를 얻을 수 있는 칼럼이 많다. 따라서 데이터 전처리에 많은 시간을 투자해야 한다. 데이터 전처리를 위해서는 데이터의 분포와 성질에 대해서 알아두어야 한다.
+
+```{r}
+str(titanic)
+summary(titanic)
+
+titanic$Sex <- as.factor(titanic$Sex)
+titanic$Embarked <- as.factor(titanic$Embarked)
+titanic$Survived <- as.factor(titanic$Survived)
+titanic$Pclass <- as.factor(titanic$Pclass)
+```
+
+각각의 칼럼의 의미는 키노트에 적혀 있다. `Sex`, `Embarked`, `Survived`, `Pclass`는 수치형이나 문자형 데이터로 불러왔지만, 이후 데이터 핸들링을 용이하게 하기 위해서 요인형 데이터로 바꿨다. `as.factor()`를 사용한다.
+
+먼저 각 객실의 등급의 분포를 보자. 이 때, 하나의 데이터를 다룰 때 `attach()` 함수를 사용해서 매우 편하게 다룰 수 있다. 참고로 위키피디아 등을 통해 얻은 정보에 따르면 고급 객실에 머문 고객들의 생존률이 더 높다.
+
+```{r}
+attach(titanic)
+table(Pclass)                                   # 3등실의 인원이 굉장히 많다.
+table(Pclass, Sex)                              # 남녀의 비율을 볼 수 있다.
+prop.table(table(Pclass, Sex), margin = 1)      # 전체적으로 남자가 많다.
+```
+
+다른 변수에 대해서도 분포를 확인하고 싶지만, 결측값이 너무 많다. 당장 중요해보이는 나이 칼럼의 데이터는 총 263개가 결측값이다.
+
+```{r}
+sum(is.na(Age))
+```
+
+
+###### Handle The Missing Data (1) : Fare
+
+각 칼럼의 결측값들을 하나하나 처리하도록 하자. 우선 운임과 관련된 `Fare` 칼럼을 핸들링하자.
+
+```{r}
+summary(Fare)
+```
+
+다행히 결측값이 하나다. 시각화를 통해 데이터의 분포를 확인해보자.
+
+```{r}
+ggplot(data = titanic, aes(x = Fare)) + 
+        geom_density()                          # 왼쪽에 치우친 분포다.
+summary(Fare)
+```
+
+중앙값이 평균에 비해 굉장히 작은 것을 알 수 있다. 몇 개 안되는 결측값은 보통 삭제하기 보다는, 중앙값이나 평균을 채워 처리하는 경우가 많다. 이 경우, 평균은 일반적인 특성을 나타내기 힘들어 보이므로, 중앙값으로 결측값을 메우도록 하자.
+
+```{r}
+titanic$Fare[is.na(Fare)] <- median(Fare, na.rm = T)
+```
+
+###### Handle The Missing Data (2) : Embarked
+
+이번엔 탑승지와 관련된 `Embarked` 칼럼을 들여다보도록 하자.
+
+```{r}
+table(Embarked)                                 # 빈 데이터가 두 개가 있다.
+```
+
+각각의 알파벳이 나타내는 바는 다음과 같다.
+| 약자 | 지명 |
+| :--| | :--| |
+| C | Cherbourg |
+| Q | Queenstown |
+| S | Southampton |
+
+빈 값들은 모두 `S`로 바꿔준다. 가장 수가 많으므로 두 개가 늘어나더라도 데이터에 큰 문제가 발생하지 않기 때문이다.
+
+```{r}
+titanic$Embarked[Embarked == ''] <- "S"
+table(titanic$Embarked)
+```
+
+요인형 데이터로 변형해서 수정하다보니 해당 빈칸 요인이 그대로 남아있다. 이를 없애려면 문자형으로 바꾸었다가, 요인형으로 다시 바꾸자.
+
+```{r}
+titanic$Embarked <- as.factor(as.character(titanic$Embarked))
+```
+
+
+###### Handle The Missing Data (3) : Age
+
+나이의 경우, 결측값이 263개나 되기 때문에, 위의 방법들론 불가능하다. 우선 결측값을 제외한 데이터의 분포를 확인해보자.
+
+```{r}
+ggplot(data = titanic, aes(x = 1, y = Age)) + 
+        geom_boxplot()
+
+table(ceiling(titanic$Age))                     # 나이를 올림해서 보자.
+
+ggplot(data = titanic, aes(x = ceiling(Age), fill = Sex)) + 
+        geom_bar(position = "dodge")
+
+ggplot(data = titanic, aes(x = ceiling(Age), fill = Sex)) + 
+        geom_bar() +
+        facet_wrap( ~ Sex)
+```
+
+결과만 놓고 보면, 20세 근처의 승객이 가장 많고, 생각보다 1~10세가 많다. 하지만 결측값을 함께 다루면 결과가 크게 달라질 수 있다. 다소 복잡하지만 선형회귀법(Linear Regression)을 사용해서 나이를 예측하자. 물론 의사결정나무를  사용할 수 있지만, 결과가 너무 이분법적으로 나오기 때문에 불균형한(imbalanced) 결과가 나올 수 있다.
+
+```{r}
+Agefit <- lm(Age ~ Sex + Fare + Embarked + Sibsp + Parch,
+                data = titanic[!is.na(Age), ])
+
+summary(Agefit)
+```
+
+선형 모델이 좋은 편은 아니다. 기본 나이가 29살이고 기껏해야 +- 3살이기 때문이다. 결국 중앙에 몰리는 결과가 나온다. 하지만 현재에선 이것이 최선이다. 본 모델을 이용해서 나이를 예측해보자. 예측할 때는 `predict()` 함수를 사용한다.
+
+```{r}
+titanic$Age[is.na(Age)] <- predict(Agefit, titanic[is.na(titanic$Age), ])
+summary(titanic$Age)                            # 결측값이 사라졌다.
+
+titanic$Age[titanic$Age < 0] <- 1               # 혹시라도 나이가 0보다 작으면 안되니까...
+
+ggplot(data = titanic, aes(x = ceiling(Age), fill = Sex)) + 
+        geom_bar() +
+        facet_wrap( ~ Sex)
+```
+
+나이 칼럼까지 결측값을 없앴으므로, 어느 정도 기본적인 결측값 제거 작업은 완료했다. 본 데이터를 이제 훈련 데이터와 테스트 데이터로 나눠서 학습을 진행하면 된다. 비율은 7:3으로 만든다. 이 때 `sample_frac()` 함수를 사용하면 쉽게 데이터를 나눌 수 있다. 랜덤으로 난수를 뽑아내서 7:3으로 샘플링한다.
+
+```{r}
+set.seed(1234)                          # for reproducibility
+train <- sample_frac(titanic, 0.7)
+train <- train %>%
+        arrange(Passengerid)
+training_index <- train$Passengerid
+test <- titanic[-training_index, ]
+```
+
+테스트 데이터에는 생존 여부 정보를 담고 있으면 안되므로, 다른 곳에 저장해서 모델을 평가할 때 사용하도록 한다.
+
+```{r}
+survived_test <- test$Survived
+test$Survived <- NULL
+```
+
+### 3. Model Construction
+
+이제 랜덤 포레스트를 사용해보자. `randomForest()` 함수를 사용하면 된다. 기본적으로 공식과, 사용할 데이터, 중요 변수 출력 여부, 의사결정나무의 수를 설정하면 된다.
+
+```{r}
+set.seed(1234)                          # for reproducibility
+firstRF <- randomForest(Survived ~ Pclass + Sex + Age + Fare + Embarked + Sibsp + Parch,
+                        data = train,
+                        importance = TRUE,
+                        ntree = 2000)
+
+# 예측
+firstPredict <- predict(firstRF, test, type = "class")
+varImpPlot(firstRF)
+```
+
+중요 변수를 체크할 때는 `varImpPlot()` 함수를 사용하면 된다.
+
+### 4. Evaluating The Model
+
+본 모델을 평가할 메트릭은 정확도(Accuracy)다. 전체 관측치에서 올바르게 예측된 것이 몇 개나 되는 지 퍼센테이지로 나타내는 척도다. 기본 R에서 제공하는 기능이 아니므로, 함수를 만들어야 한다.
+
+```{r}
+accuracy <- function(predict, answer = survived_test){
+        identical <- predict == answer
+        return(sum(identical)/length(answer))
+}
+
+accuracy(firstPredict)
+```
+
+
+### 5. Derived Variables
+
+##### 1. Child
+
+위키피디아 등을 통해 얻은 정보에 따르면 어린이의 구조율이 제법 높음을 알 수 있다. 18세 미만의 탑승객을 `Child == 1`로 정의하자. 새로 만든 데이터는 아까 사용했던 훈련 데이터 인덱스를 활용해서 7:3으로 나누자.
+
+```{r}
+titanic$Child <- 0
+
+titanic$Child[titanic$Age < 18] <- 1
+titanic$Child <- as.factor(titanic$Child)
+
+train <- titanic[training_index, ]
+test <- titanic[-training_index, ]
+```
+
+새로 만들어진 파생변수의 영향력을 체크하기 위해, 랜덤포레스트를 다시 적용한다.
+
+```{r}
+set.seed(1234)                          # for reproducibility
+secondRF <- randomForest(Survived ~ Pclass + Sex + Age + Fare + Embarked + Sibsp + Parch + Child,
+                        data = train,
+                        importance = TRUE,
+                        ntree = 2000)
+
+secondPredict <- predict(secondRF, test, type = "class")
+varImpPlot(secondRF)
+accuracy(secondPredict)     
+```
+
+            
+
+##### 2. Social Position
+
+이름에는 모두 일종의 직함이 달려있다.
+
+```{r}
+Name[1]
+strsplit("Allen, Miss. Elisabeth Walton", split = '[.,]')
+```
+
+결과물의 두 번째가 탑승객의 `Title`을 의미한다. 이걸 빼내면 된다.
+
+```{r}
+strsplit("Allen, Miss. Elisabeth Walton", split = '[.,]')[[1]][2]
+```
+
+이제 이 기능을 자동으로 할 수 있는 함수를 짜면 된다. `sapply()` 함수에 사용하기 위해서다.
+
+
+```{r}
+splitToTitle <- function(x){
+        strsplit(x, split = '[.,]')[[1]][2]
+}
+
+# sapply() 함수 기억 나시나요? :)
+titanic$Title <- sapply(titanic$Name, FUN = splitToTitle)
+titanic$Title <- sub(' ', '', titanic$Title)        # 빈공간 제거
+table(titanic$Title)
+```
+
+보기 좋은 결과는 아니다. 하나만 달랑 있는 결과가 너무나 많기 때문이다. 이러한 결과는 랜덤포레스트에서 비안정성을 불러 일으키기 때문에 정리하도록 한다.
+
+```{r}
+# Mlle = Mademoiselle = Miss, Mme = Madame = Mrs
+titanic$Title[titanic$Title == "Mlle"] <- "Miss"
+titanic$Title[titanic$Title == "Mme"] <- "Mrs"
+titanic$Title[titanic$Title %in% c("Capt", "Don", "Major", "Sir", "Col")] <- "Sir"
+titanic$Title[titanic$Title %in% c("Dona", "Lady", "the Countess", "Jonkheer")] <- "Lady"
+titanic$Title <- as.factor(titanic$Title)
+```
+
+이름에서 그 사람의 호칭을 알게 되었다. 이를 통해 나이를 다시금 예측할 수 있을 것으로 보인다. 어린 도련님에게는 Master, 나이 많은 군인에게는 Sir을 붙이는 식이기 때문이다. 나이가 바뀔 수 있기 때문에 `Child` 변수도 다시 생성해주도록 한다.
+
+```{r}
+titanic$Age <- Age
+
+ageModel <- lm(formula = Age ~ Title + Fare + Sibsp + Parch,
+               data = titanic[!is.na(Age)])
+
+summary(ageModel)
+
+titanic$Age[is.na(Age)] <- predict(ageModel, titanic[is.na(titanic$Age), ])
+
+titanic$Age[titanic$Age < 0] <- 1
+
+titanic$Child <- 0
+titanic$Child[titanic$Age < 18] <- 1
+titanic$Child <- as.factor(titanic$Child)
+
+train <- titanic[training_index, ]
+test <- titanic[-training_index, ]
+```
+
+다시금 랜덤포레스트를 적용한다.
+
+```{r}
+set.seed(1234)                          # for reproducibility
+thirdRF <- randomForest(Survived ~ Pclass + Sex + Age + Fare + Embarked + Sibsp + Parch + Child + Title,
+                         data = train,
+                         importance = TRUE,
+                         ntree = 2000)
+
+thirdPredict <- predict(thirdRF, test, type = "class")
+varImpPlot(thirdRF)
+accuracy(thirdPredict)  
+```
+               
+
+##### 3. Family Size
+
+가족의 크기가 클 수록, 생존율이 떨어진다는 가정은 충분히 타당하다. 실제로 타이타닉과 관련된 사실을 다루는 몇몇 웹페이지에서는 이러한 가정을 정설로 받아들이기도 한다. 가족의 크기는 배우자와 형제, 부모님과 자녀를 모두 합하고 본인을 더하면 된다.
+
+```{r}
+titanic <- titanic %>%
+        mutate(FamilySize = Sibsp + Parch + 1)
+table(titanic$FamilySize)
+
+train <- titanic[training_index, ]
+test <- titanic[-training_index, ]
+```
+
+랜덤포레스트를 적용한다.
+
+```{r}
+set.seed(1234)                          # for reproducibility
+fourthRF <- randomForest(Survived ~ Pclass + Sex + Age + Fare + Embarked + Sibsp + Parch + Child + Title + FamilySize,
+                        data = train,
+                        importance = TRUE,
+                        ntree = 2000)
+
+fourthPredict <- predict(fourthRF, test, type = "class")
+varImpPlot(fourthRF)
+accuracy(fourthPredict)   
+```
+
+
+### 6. Discussion
+
+랜덤 포레스트에서 사용하는 변수가 굉장히 많다. 중요 변수들을 제외하면 보다 일반적인 모델을 얻을 수 있고, 이로 인해 더 좋은 예측력을 가지는 모델을 얻어낼 수도 있다. 이 때 변수 선택은 `varImpPlot()` 함수의 결과물을 참고하면 된다.
