@@ -155,7 +155,7 @@ ggplot(faithful, aes(x = eruptions, y = waiting)) +
 
 # Maps --------------------------------------------------------------------
 
-install.packages("maps")
+# install.packages("maps")
 library(maps)
 library(mapproj)
 

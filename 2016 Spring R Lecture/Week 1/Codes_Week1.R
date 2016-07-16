@@ -220,11 +220,9 @@ identical(as.data.frame(grade), grade_df)
 
 ## IRIS 데이터
 iris
+iris$Sepal.Width
 
 # 칼럼 접근하기
 # 행 접근하기
 # 기본적인 시각화 보여주기
 # summary(), str(), table
-
-# read.csv / circle.csv
-# 이게 뭐게?

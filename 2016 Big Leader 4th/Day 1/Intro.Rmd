@@ -1,0 +1,331 @@
+---
+title: "Introduction"
+author: "Jaeyoon Han"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::html_clean:
+    highlight: pygments
+    css: ~/Google Drive/ML Lecture/rmarkdown.css
+---
+
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE, tidy = TRUE, comment = NA, warning = FALSE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2, fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11, margin = margin(10, 0, 0, 0), face = "bold"),
+              axis.title.y = element_text(size = 11, margin = margin(0, 10, 0, 0), face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# R Basic Syntax
+
+## Calculation
+
+```{r}
+10 + 20
+10 - 20
+10 * 20
+10 / 20
+10 ^ 2
+10 %% 20                # Remainder
+25 %/% 7                # Quotient
+
+log(100)
+log(100, base = 10)     # 밑이 10인 로그 (상용로그)
+
+exp(2)
+log(exp(2))
+```
+
+## Variable
+
+```{r}
+one <- 1
+two <- 2
+one
+two
+one + two
+three <- one + two
+three
+```
+
+```{r}
+# 이미 저장되어 있는 변수들
+pi
+letters
+LETTERS
+```
+
+```{r}
+# 문자열 저장도 가능하다.
+hi <- "hi"
+hi
+```
+
+```{r}
+introduce <- "My Name Is"
+name <- "NAME"
+paste(introduce, name)          # paste : 두 문자열을 붙이는 함수
+```
+
+```{r}
+one
+hi
+
+class(one)              # numeric : 숫자, 수치형
+class(hi)               # character : 스트링, 문자열
+
+class(1)
+class("1")
+
+# A == B : A 와 B가 같습니까?
+# logical : 논리값
+1 == 2                  # FALSE
+one == 1                # TRUE
+
+TRUE & TRUE
+TRUE & FALSE
+TRUE | FALSE
+FALSE | FALSE
+```
+
+## Missing Value
+
+결측값은 데이터 핸들링, 예측 모델 구축 등 모든 작업에 있어서 올바른 연산값을 반환하지 않는다. 따라서 데이터 전처리 과정에서 반드시 다뤄야하는 값들이다. 삭제하거나, 메꾸거나.
+
+```{r}
+NA
+1 + NA                  # 알고 있는 것 + 알 수 없는 것
+is.na(NA)               # NA 확인법
+is.na(1)
+
+NaN
+1 + NaN                 # 숫자 + 숫자 아닌 것
+0/0
+is.nan(NaN)
+
+NULL
+is.null(NULL)
+1 + NULL
+```
+
+# Data Type
+
+## Vector
+
+`1`, `2`와 같이 하나씩 있는 것들을 **스칼라(Scalar)**라고 한다. 이들을 모아놓으면 **벡터(Vector)**가 된다.
+
+```{r}
+x <- c(1, 2, 3, 4, 5)
+x
+1:5
+class(x)
+```
+
+```{r}
+x <- c("1", "2", "3")
+x
+class(x)
+
+x <- as.numeric(x)
+x
+class(x)
+```
+
+`seq()` 함수와 `rep()` 함수를 쓰면 원하는 숫자 나열을 얻어낼 수 있다.
+
+```{r}
+seq(1, 10)              # 1부터 10까지
+seq(1, 10, by = 2)      # 1부터 10까지, 한 칸씩 띄어서
+
+rep(1:4, 2)             # 1부터 4까지 2 번 반복
+rep(1:4, each = 2)      # 1부터 4까지 숫자를 각각 2번씩 반복
+```
+
+벡터에 있는 값들에 직접 접근하려면 인덱스 개념을 사용한다. 
+
+```{r}
+letters
+letters[c(1, 3, 5)]
+```
+
+## Factor
+
+```{r}
+gender <- c(rep("male", 20), rep("female", 30))
+gender <- factor(gender)
+gender
+summary(gender)
+
+levels(gender) <- c("여성", "남성")
+summary(gender)
+```
+
+```{r}
+mat <- matrix(data = 1:9, ncol = 3)
+mat
+
+matrix(data = 1:9, nrow = 3)
+mat <- matrix(data = 1:9, nrow = 3, byrow = TRUE)
+mat
+
+mat[1, ]
+mat[, 1]
+mat[2, 2]
+
+mat * 2
+mat / 2
+dim(mat)
+```
+
+```{r}
+grade <- list(name = c("A", "B", "C"),
+              score = c(90, 80, 70),
+              grade = c("A+", "B+", "B0"))
+
+grade[1]
+grade[2]
+grade[3]
+
+grade[[1]]
+grade[[2]]
+grade[[3]]
+
+grade[[1]][1]
+```
+
+```{r}
+grade_df <- data.frame(name = c("A", "B", "C"),
+                       score = c(90, 80, 70),
+                       grade = c("A+", "B+", "B0"))
+
+as.data.frame(grade)
+identical(as.data.frame(grade), grade_df)
+```
+
+# Control Statement
+
+## if, else
+
+```{r}
+## if(조건){
+##      실행할 내용
+## } else {
+##      실행할 내용
+## }
+
+x <- sample(1:100, 1)
+x
+
+if((x %% 2) == 1){
+        paste0(x, "는 홀수입니다.") 
+} else {
+        paste0(x, "는 짝수입니다.")
+}
+
+x <- 1:10
+if((x %% 2) == 1){
+        paste0(x, "는 홀수입니다.") 
+} else {
+        paste0(x, "는 짝수입니다.")
+}
+# Warning!
+
+ifelse(x %% 2 == 0, paste0(x, "는 짝수입니다."), paste0(x, "는 홀수입니다."))
+
+x <- 18
+x %% 4
+
+switch(x %% 4, "나머지 1", "나머지 2", "나머지 3", "4의 배수")
+```
+
+
+## For Loop
+
+```{r}
+sequence <- 2010:2016
+sequence
+
+for(i in sequence){
+        cat("올해는", i, "년 입니다. \n")
+}
+
+
+set.seed(1234) # 난수 고정
+check <- sample(x = 1:100, size = 15)
+check
+
+## 이 중 홀수가 몇 개 있는지 찾고자 한다.
+count <- 0
+for(i in 1:length(check)){
+        if(check[i] %% 2 == 1){
+                cat(check[i], "는 홀수입니다. COUNT!\n")
+                count <- count + 1
+        } else{
+                cat(check[i], "는 짝수입니다. \n")
+        }
+}
+
+
+## next
+## 1부터 10까지 숫자 중에서 홀수만 뽑아보자.
+## next는 해당 루프를 넘어간다.
+for (i in 1:10) {
+        if (i %% 2 == 0){
+                next # 짝수면 루프 넘어가기
+        }
+        print(i)
+}
+
+```
+
+## While loop
+
+```{r}
+for(i in 1:100){
+        if(i %% 7 == 0){
+                print(i)
+        }
+}
+
+## while문을 사용하면
+
+i <- 1 # 반드시 선언할 것
+while(i <= 100){
+        if(i %% 7 == 0){
+                print(i)
+        }
+        
+        i <- i + 1 # 하나를 더해주지 않으면 무한 반복이 일어난다.
+}
+```
+
+# 숙제
+
+```{r}
+for(i in 1:9){
+        for(j in 1:10){
+                cat(i, "*", j, "=", i*j, "\t")
+                if(j == 5){
+                        cat("\n")
+                }
+                if(j == 10){
+                        cat("\n==========================\n")
+                }
+        }
+}
+```
+

@@ -2,8 +2,8 @@
 # setwd("./Google Drive/R Lecture/Week 2/")
 getwd()
 
-# ½ºÅ©¸³Æ® Ã¢¿¡ ÄÚµå¸¦ ÀÛ¼ºÇÏ°í
-# Ctrl + Enter(Command + Enter)¸¦ ÅëÇØ¼­ ÄÜ¼Ö¿¡¼­ ½ÇÇà
+# ìŠ¤í¬ë¦½íŠ¸ ì°½ì— ì½”ë“œë¥¼ ìž‘ì„±í•˜ê³ 
+# Ctrl + Enter(Command + Enter)ë¥¼ í†µí•´ì„œ ì½˜ì†”ì—ì„œ ì‹¤í–‰
 
 # head()
 # paste()
@@ -13,127 +13,127 @@ getwd()
 # str()
 
 # DATA IMPORT & EXPORT ----------------------------------------------------
-## µ¥ÀÌÅÍ¸¦ ºÒ·¯¿ÀÀÚ.
+## ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ìž.
 ## read.csv()
-## read.csv("ÆÄÀÏ °æ·Î", stringsAsFactors = FALSE)
-## read.csv() ÇÔ¼ö´Â ¹®ÀÚ¿­À» ÀÚµ¿À¸·Î FactorÇü µ¥ÀÌÅÍ·Î ¹Ù²Û´Ù.
-## ÀÌ¸¦ ¹æÁöÇÏ·Á¸é stringAsFactors = FALSE ¿É¼ÇÀ» »ç¿ëÇÑ´Ù.
+## read.csv("íŒŒì¼ ê²½ë¡œ", stringsAsFactors = FALSE)
+## read.csv() í•¨ìˆ˜ëŠ” ë¬¸ìžì—´ì„ ìžë™ìœ¼ë¡œ Factorí˜• ë°ì´í„°ë¡œ ë°”ê¾¼ë‹¤.
+## ì´ë¥¼ ë°©ì§€í•˜ë ¤ë©´ stringAsFactors = FALSE ì˜µì…˜ì„ ì‚¬ìš©í•œë‹¤.
 circle <- read.csv("circle.csv", stringsAsFactors = FALSE)
 head(circle)
 
-## º» µ¥ÀÌÅÍ´Â ¿ø¿¡ ÀÖ´Â Á¡µé¿¡ ´ëÇÑ µ¥ÀÌÅÍ´Ù.
-## µ¥ÀÌÅÍ ³»ÀÇ Á¡µéÀ» ¼ø¼­´ë·Î ÀÌÀ¸¸é ¿øÀÌ ³ª¿Â´Ù.
+## ë³¸ ë°ì´í„°ëŠ” ì›ì— ìžˆëŠ” ì ë“¤ì— ëŒ€í•œ ë°ì´í„°ë‹¤.
+## ë°ì´í„° ë‚´ì˜ ì ë“¤ì„ ìˆœì„œëŒ€ë¡œ ì´ìœ¼ë©´ ì›ì´ ë‚˜ì˜¨ë‹¤.
 ggplot(data = circle, aes(x = x, y = y)) + 
         geom_path()
 
-## µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏÀÚ.
+## ë°ì´í„°ë¥¼ ì €ìž¥í•˜ìž.
 data(iris)
 head(iris)
 
 ## write.csv()
-## write.csv(µ¥ÀÌÅÍ º¯¼ö ÀÌ¸§, "ÆÄÀÏ °æ·Î", row.names = FALSE)
-## write.csv() ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏ¸é ¹Ýµå½Ã
-## ¿øÇÏÁö ¾Ê´Â 'Çà ÀÌ¸§' Ä®·³ÀÌ »ý±ä´Ù. ÀÌ¸¦ Á¦°ÅÇÏ·Á¸é
-## row.names = FALSE¸¦ »ç¿ëÇÑ´Ù. ÇÊ¼öÀûÀÎ ¿É¼ÇÀÌ´Ù.
-## ÀúÀå °¡´ÉÇÑ µ¥ÀÌÅÍ´Â ÀÏ¹ÝÀûÀ¸·Î Data.Frame°ú ArrayÀÌ´Ù.
+## write.csv(ë°ì´í„° ë³€ìˆ˜ ì´ë¦„, "íŒŒì¼ ê²½ë¡œ", row.names = FALSE)
+## write.csv() í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬ ë°ì´í„°ë¥¼ ì €ìž¥í•˜ë©´ ë°˜ë“œì‹œ
+## ì›í•˜ì§€ ì•ŠëŠ” 'í–‰ ì´ë¦„' ì¹¼ëŸ¼ì´ ìƒê¸´ë‹¤. ì´ë¥¼ ì œê±°í•˜ë ¤ë©´
+## row.names = FALSEë¥¼ ì‚¬ìš©í•œë‹¤. í•„ìˆ˜ì ì¸ ì˜µì…˜ì´ë‹¤.
+## ì €ìž¥ ê°€ëŠ¥í•œ ë°ì´í„°ëŠ” ì¼ë°˜ì ìœ¼ë¡œ Data.Frameê³¼ Arrayì´ë‹¤.
 write.csv(iris, "iris.csv", row.names = FALSE)
 
-## ÀúÀåÇßÀ¸¸é ÇØ´ç Æú´õ¿¡ ÀúÀåµÇ¾ú´ÂÁö È®ÀÎÇÏÀÚ.
-## ÀÏ¹ÝÀûÀ¸·Î °æ·Î¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾Ò´Ù¸é ÀÛ¾÷ µð·ºÅä¸®¿¡ ÀúÀåµÈ´Ù.
-## Çà ¹øÈ£°¡ »ý¼ºµÇ¾ú´Ù¸é ÀúÀåÇÒ ¶§ row.names = FALSE¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾Ò´Ù.
+## ì €ìž¥í–ˆìœ¼ë©´ í•´ë‹¹ í´ë”ì— ì €ìž¥ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ìž.
+## ì¼ë°˜ì ìœ¼ë¡œ ê²½ë¡œë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ë‹¤ë©´ ìž‘ì—… ë””ë ‰í† ë¦¬ì— ì €ìž¥ëœë‹¤.
+## í–‰ ë²ˆí˜¸ê°€ ìƒì„±ë˜ì—ˆë‹¤ë©´ ì €ìž¥í•  ë•Œ row.names = FALSEë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ë‹¤.
 
 
 # CONTROL STATEMENTS ------------------------------------------------------
 # IF, ELSE ----------------------------------------------------------------
 
-## 1ºÎÅÍ 100±îÁöÀÇ ¼ýÀÚ¸¦ ·£´ýÀ¸·Î »Ì¾Æº¸ÀÚ.
+## 1ë¶€í„° 100ê¹Œì§€ì˜ ìˆ«ìžë¥¼ ëžœë¤ìœ¼ë¡œ ë½‘ì•„ë³´ìž.
 ## sample(VECTOR, HOW MANY)
 
 x <- sample(1:100, 1)
 x
 
-## if(Á¶°Ç){
-##      ½ÇÇàÇÒ ³»¿ë
+## if(ì¡°ê±´){
+##      ì‹¤í–‰í•  ë‚´ìš©
 ## } else {
-##      ½ÇÇàÇÒ ³»¿ë
+##      ì‹¤í–‰í•  ë‚´ìš©
 ## }
 
-## else´Â ifÀÇ ¿ÏÀü ¹Ý´ë Á¶°Ç
+## elseëŠ” ifì˜ ì™„ì „ ë°˜ëŒ€ ì¡°ê±´
 
 if((x %% 2) == 1){
-        paste0(x, "´Â È¦¼öÀÔ´Ï´Ù.") 
+        paste0(x, "ëŠ” í™€ìˆ˜ìž…ë‹ˆë‹¤.") 
 } else {
-        paste0(x, "´Â Â¦¼öÀÔ´Ï´Ù.")
+        paste0(x, "ëŠ” ì§ìˆ˜ìž…ë‹ˆë‹¤.")
 }
 
-ifelse(x %% 2 == 0, paste0(x, "´Â Â¦¼öÀÔ´Ï´Ù."), paste0(x, "´Â È¦¼öÀÔ´Ï´Ù."))
+ifelse(x %% 2 == 0, paste0(x, "ëŠ” ì§ìˆ˜ìž…ë‹ˆë‹¤."), paste0(x, "ëŠ” í™€ìˆ˜ìž…ë‹ˆë‹¤."))
 
-## ifelse´Â º¤ÅÍµµ Áö¿øÇÑ´Ù.
+## ifelseëŠ” ë²¡í„°ë„ ì§€ì›í•œë‹¤.
 
 numbers <- 1 : 30
-ifelse((numbers %% 2) == 1, paste0(numbers, "´Â È¦¼öÀÔ´Ï´Ù."), paste0(numbers, "´Â Â¦¼öÀÔ´Ï´Ù."))
+ifelse((numbers %% 2) == 1, paste0(numbers, "ëŠ” í™€ìˆ˜ìž…ë‹ˆë‹¤."), paste0(numbers, "ëŠ” ì§ìˆ˜ìž…ë‹ˆë‹¤."))
 
-## Á¶°ÇÀÌ ¿©·¯°³¶ó¸é?
+## ì¡°ê±´ì´ ì—¬ëŸ¬ê°œë¼ë©´?
 
 if(x %% 4 == 1){
-        print("³ª¸ÓÁö 1")
+        print("ë‚˜ë¨¸ì§€ 1")
 } else if(x %% 4 == 2){
-        print("³ª¸ÓÁö 2")
+        print("ë‚˜ë¨¸ì§€ 2")
 } else if(x %% 4 == 3){
-        print("³ª¸ÓÁö 3")
+        print("ë‚˜ë¨¸ì§€ 3")
 } else{
-        print("4ÀÇ ¹è¼ö")
+        print("4ì˜ ë°°ìˆ˜")
 }
 
 
 # FOR ---------------------------------------------------------------------
-## ¹Ýº¹¹®
+## ë°˜ë³µë¬¸
 
 sequence <- 2010:2016
 sequence
 
 for(i in sequence){
-        cat("¿ÃÇØ´Â", i, "³â ÀÔ´Ï´Ù. \n")
+        cat("ì˜¬í•´ëŠ”", i, "ë…„ ìž…ë‹ˆë‹¤. \n")
 }
 
-paste0("¿ÃÇØ´Â ", sequence, "³â ÀÔ´Ï´Ù.")
+paste0("ì˜¬í•´ëŠ” ", sequence, "ë…„ ìž…ë‹ˆë‹¤.")
 
-# \n : ÇÑ ÁÙ ¶ç¶ó´Â ÀÇ¹Ì (next line)
-# cat() : ¸Þ½ÃÁöÃ³·³ Ãâ·ÂÇÏ°í, ¹®ÀÚ·Î ÀÎ½ÄÇÏÁö ¾Ê´Â´Ù.
-# paste, paste0 : ¹®ÀÚ·Î ÀÎ½ÄÇØ¼­ Ãâ·Â
+# \n : í•œ ì¤„ ë„ë¼ëŠ” ì˜ë¯¸ (next line)
+# cat() : ë©”ì‹œì§€ì²˜ëŸ¼ ì¶œë ¥í•˜ê³ , ë¬¸ìžë¡œ ì¸ì‹í•˜ì§€ ì•ŠëŠ”ë‹¤.
+# paste, paste0 : ë¬¸ìžë¡œ ì¸ì‹í•´ì„œ ì¶œë ¥
 
 ############################################
 ############################################
-## º¸Åë for¹®À» ifÀý°ú ÇÔ²² »ç¿ëÇÏ´Â °æ¿ì°¡ ¸¹´Ù.
+## ë³´í†µ forë¬¸ì„ ifì ˆê³¼ í•¨ê»˜ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ê°€ ë§Žë‹¤.
 
-set.seed(1234) # ³­¼ö °íÁ¤
+set.seed(1234) # ë‚œìˆ˜ ê³ ì •
 
 check <- sample(x = 1:100, size = 15)
 check
 
-## ÀÌ Áß È¦¼ö°¡ ¸î °³ ÀÖ´ÂÁö Ã£°íÀÚ ÇÑ´Ù.
+## ì´ ì¤‘ í™€ìˆ˜ê°€ ëª‡ ê°œ ìžˆëŠ”ì§€ ì°¾ê³ ìž í•œë‹¤.
 
 count <- 0
 
 for(i in 1:length(check)){
         if(check[i] %% 2 == 1){
-                cat(check[i], "´Â È¦¼öÀÔ´Ï´Ù. COUNT!\n")
+                cat(check[i], "ëŠ” í™€ìˆ˜ìž…ë‹ˆë‹¤. COUNT!\n")
                 count <- count + 1
         } else{
-                cat(check[i], "´Â Â¦¼öÀÔ´Ï´Ù. \n")
+                cat(check[i], "ëŠ” ì§ìˆ˜ìž…ë‹ˆë‹¤. \n")
         }
 }
 
-## »ç½Ç ´õ °£´ÜÇÏ°Ô´Â..
+## ì‚¬ì‹¤ ë” ê°„ë‹¨í•˜ê²ŒëŠ”..
 sum(check %% 2 == 1)
 
-## ÇÇº¸³ªÄ¡ ¼ö¿­ ¸¸µé¾îº¸±â
-## Ã³À½ µÎ ¼ö´Â ¸¸µé°í ½ÃÀÛÇØ¾ß µÈ´Ù.
+## í”¼ë³´ë‚˜ì¹˜ ìˆ˜ì—´ ë§Œë“¤ì–´ë³´ê¸°
+## ì²˜ìŒ ë‘ ìˆ˜ëŠ” ë§Œë“¤ê³  ì‹œìž‘í•´ì•¼ ëœë‹¤.
 
 Fibonacci <- c(1, 1)
 
-## ´ÙÀ½ ¼ö´Â ÀÌÀü µÎ ¼ö¸¦ ´õÇØ¼­...
-## 20°³±îÁö ¸¸µé¾îº¸ÀÚ.
+## ë‹¤ìŒ ìˆ˜ëŠ” ì´ì „ ë‘ ìˆ˜ë¥¼ ë”í•´ì„œ...
+## 20ê°œê¹Œì§€ ë§Œë“¤ì–´ë³´ìž.
 
 for(i in 3:20){
         Fibonacci[i] <- Fibonacci[i - 1] + Fibonacci[i - 2]
@@ -141,8 +141,8 @@ for(i in 3:20){
 
 Fibonacci
 
-## ½Ç½À : for ¹®À» ÀÌ¿ëÇØ¼­ 1ºÎÅÍ 100±îÁöÀÇ ¼ö Áß¿¡¼­
-## È¦¼ö¸¸ ´Ù ´õÇØº¸ÀÚ.
+## ì‹¤ìŠµ : for ë¬¸ì„ ì´ìš©í•´ì„œ 1ë¶€í„° 100ê¹Œì§€ì˜ ìˆ˜ ì¤‘ì—ì„œ
+## í™€ìˆ˜ë§Œ ë‹¤ ë”í•´ë³´ìž.
 
 sum <- 0
 
@@ -155,27 +155,27 @@ sum # 2500
 
 sum <- 0
 
-## »ç½Ç FOR ¹®Àº R ¿¡¼­´Â ºñÈ¿À²ÀûÀÎ °æ¿ì°¡ Á¦¹ý ÀÖ´Ù.
-## C ¾ð¾î³ª JAVAÀÇ °æ¿ì ÀÚÁÖ »ç¿ëÇÏ±â´Â ÇÏÁö¸¸,
-## R¿¡¼­´Â ¹Ýº¹¹®À» »ç¿ëÇÑ È¿À²ÀûÀÎ ¶óÀÌºê·¯¸®°¡ ±²ÀåÈ÷ ¸¹±â ¶§¹®ÀÌ´Ù.
+## ì‚¬ì‹¤ FOR ë¬¸ì€ R ì—ì„œëŠ” ë¹„íš¨ìœ¨ì ì¸ ê²½ìš°ê°€ ì œë²• ìžˆë‹¤.
+## C ì–¸ì–´ë‚˜ JAVAì˜ ê²½ìš° ìžì£¼ ì‚¬ìš©í•˜ê¸°ëŠ” í•˜ì§€ë§Œ,
+## Rì—ì„œëŠ” ë°˜ë³µë¬¸ì„ ì‚¬ìš©í•œ íš¨ìœ¨ì ì¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ê°€ êµ‰ìž¥ížˆ ë§Žê¸° ë•Œë¬¸ì´ë‹¤.
 
 ## next
-## 1ºÎÅÍ 10±îÁö ¼ýÀÚ Áß¿¡¼­ È¦¼ö¸¸ »Ì¾Æº¸ÀÚ.
-## next´Â ÇØ´ç ·çÇÁ¸¦ ³Ñ¾î°£´Ù.
+## 1ë¶€í„° 10ê¹Œì§€ ìˆ«ìž ì¤‘ì—ì„œ í™€ìˆ˜ë§Œ ë½‘ì•„ë³´ìž.
+## nextëŠ” í•´ë‹¹ ë£¨í”„ë¥¼ ë„˜ì–´ê°„ë‹¤.
 for (i in 1:10) {
         if (i %% 2 == 0){
-                next # Â¦¼ö¸é ·çÇÁ ³Ñ¾î°¡±â
+                next # ì§ìˆ˜ë©´ ë£¨í”„ ë„˜ì–´ê°€ê¸°
         }
         print(i)
 }
 
 
 # WHILE -------------------------------------------------------------------
-## for¹®Àº Á¤ÇØÁø È½¼ö·Î ¹Ýº¹
-## whileÀº Á¶°ÇÀÌ °ÅÁþÀÌ µÇ¸é ¹Ýº¹ ÁßÁö
+## forë¬¸ì€ ì •í•´ì§„ íšŸìˆ˜ë¡œ ë°˜ë³µ
+## whileì€ ì¡°ê±´ì´ ê±°ì§“ì´ ë˜ë©´ ë°˜ë³µ ì¤‘ì§€
 
-## 100±îÁöÀÇ ¼ö Áß¿¡¼­, 7ÀÇ ¹è¼ö¸¸ »Ì¾Æº¸ÀÚ.
-## for¹®À» »ç¿ëÇÏ¸é
+## 100ê¹Œì§€ì˜ ìˆ˜ ì¤‘ì—ì„œ, 7ì˜ ë°°ìˆ˜ë§Œ ë½‘ì•„ë³´ìž.
+## forë¬¸ì„ ì‚¬ìš©í•˜ë©´
 
 for(i in 1:100){
         if(i %% 7 == 0){
@@ -183,23 +183,23 @@ for(i in 1:100){
         }
 }
 
-## while¹®À» »ç¿ëÇÏ¸é
+## whileë¬¸ì„ ì‚¬ìš©í•˜ë©´
 
-i <- 1 # ¹Ýµå½Ã ¼±¾ðÇÒ °Í
+i <- 1 # ë°˜ë“œì‹œ ì„ ì–¸í•  ê²ƒ
 while(i <= 100){
         if(i %% 7 == 0){
                 print(i)
         }
         
-        i <- i + 1 # ÇÏ³ª¸¦ ´õÇØÁÖÁö ¾ÊÀ¸¸é ¹«ÇÑ ¹Ýº¹ÀÌ ÀÏ¾î³­´Ù.
+        i <- i + 1 # í•˜ë‚˜ë¥¼ ë”í•´ì£¼ì§€ ì•Šìœ¼ë©´ ë¬´í•œ ë°˜ë³µì´ ì¼ì–´ë‚œë‹¤.
 }
 
-## µ¥ÀÌÅÍ ºÐ¼®¿¡¼­´Â º¸Åë whileº¸´Ù´Â for¸¦ ¸¹ÀÌ ½è´ø °Í °°À½.
-## º¸Åë Á¤ÇØÁø ±¸°£ ³»¿¡¼­ ¹Ýº¹À» ½ÇÇàÇÏ±â ¶§¹®
-## ½ÇÁ¦ ÇÁ·Î±×·¡¹Ö¿¡¼­´Â whileÀ» ´õ ¼±È£ÇÔ
+## ë°ì´í„° ë¶„ì„ì—ì„œëŠ” ë³´í†µ whileë³´ë‹¤ëŠ” forë¥¼ ë§Žì´ ì¼ë˜ ê²ƒ ê°™ìŒ.
+## ë³´í†µ ì •í•´ì§„ êµ¬ê°„ ë‚´ì—ì„œ ë°˜ë³µì„ ì‹¤í–‰í•˜ê¸° ë•Œë¬¸
+## ì‹¤ì œ í”„ë¡œê·¸ëž˜ë°ì—ì„œëŠ” whileì„ ë” ì„ í˜¸í•¨
 ## 
 ## break
-## ¹Ýº¹¹® ¾È¿¡ »ç¿ëÇÏ¸ç, if Àý°ú ÇÔ²² »ç¿ëÇÑ´Ù.
+## ë°˜ë³µë¬¸ ì•ˆì— ì‚¬ìš©í•˜ë©°, if ì ˆê³¼ í•¨ê»˜ ì‚¬ìš©í•œë‹¤.
 
 i <- 0
 sum <- 0
@@ -209,14 +209,14 @@ while(TRUE){
         sum <- sum + i
         
         if(sum > 100){
-                cat("ÇÕÀÌ 100À» ³Ñ¾ú½À´Ï´Ù. \n")
-                cat(i, "±îÁö ´õÇß½À´Ï´Ù.")
+                cat("í•©ì´ 100ì„ ë„˜ì—ˆìŠµë‹ˆë‹¤. \n")
+                cat(i, "ê¹Œì§€ ë”í–ˆìŠµë‹ˆë‹¤.")
                 break
         }
 }
 
-## ½Ç½À : ¿¬¼ÓµÈ ¼öÀÇ ÇÕÀÌ 517¿¡ µµ´ÞÇÏ·Á¸é ¸î±îÁö ´õÇØ¾ßµÉ±î?
-## ´Ü, 517À» ³Ñ¾î¼± ¾ÈµÈ´Ù.
+## ì‹¤ìŠµ : ì—°ì†ëœ ìˆ˜ì˜ í•©ì´ 517ì— ë„ë‹¬í•˜ë ¤ë©´ ëª‡ê¹Œì§€ ë”í•´ì•¼ë ê¹Œ?
+## ë‹¨, 517ì„ ë„˜ì–´ì„  ì•ˆëœë‹¤.
 
 sum <- 0
 i <- 0
@@ -227,6 +227,7 @@ while(sum <= 517){
         
         if(sum > 517){
                 i <- i - 1
+                print(i)
                 break;
         }
 }
@@ -239,25 +240,25 @@ i
 # apply() -----------------------------------------------------------------
 sum(1:10)
 
-# 3x3 Çà·ÄÀ» ¸¸µç´Ù.
+# 3x3 í–‰ë ¬ì„ ë§Œë“ ë‹¤.
 d <- matrix(1:9, ncol = 3)
 d
 
-# Çà·ÄÀÇ °¢ ÇàÀÇ ÇÕÀ» ±¸ÇÏ°íÀÚ ÇÑ´Ù.
+# í–‰ë ¬ì˜ ê° í–‰ì˜ í•©ì„ êµ¬í•˜ê³ ìž í•œë‹¤.
 apply(d, 1, sum)
 
-# Çà·ÄÀÇ °¢ ¿­ÀÇ ÇÕÀ» ±¸ÇÏ°íÀÚ ÇÑ´Ù.
+# í–‰ë ¬ì˜ ê° ì—´ì˜ í•©ì„ êµ¬í•˜ê³ ìž í•œë‹¤.
 apply(d, 2, sum)
 
 data(iris)
 head(iris)
 str(iris)
 
-# µ¥ÀÌÅÍ¿¡¼­ ¼öÄ¡Çü µ¥ÀÌÅÍ¸¦ ¿­ ´ÜÀ§·Î Æò±ÕÀ» ³»°íÀÚ ÇÑ´Ù.
-# ¼öÄ¡Çü µ¥ÀÌÅÍ´Â? : Ã¹ ¹øÂ° ¿­ºÎÅÍ ³× ¹øÂ° ¿­
-# °è»êÇÒ ¹æÇâÀº? : ¿­(column)
-# ÇÕÀ» ±¸ÇÏ´Â ÇÔ¼ö´Â? : sum()
-# Æò±ÕÀ» ±¸ÇÏ´Â ÇÔ¼ö´Â? : mean()
+# ë°ì´í„°ì—ì„œ ìˆ˜ì¹˜í˜• ë°ì´í„°ë¥¼ ì—´ ë‹¨ìœ„ë¡œ í‰ê· ì„ ë‚´ê³ ìž í•œë‹¤.
+# ìˆ˜ì¹˜í˜• ë°ì´í„°ëŠ”? : ì²« ë²ˆì§¸ ì—´ë¶€í„° ë„¤ ë²ˆì§¸ ì—´
+# ê³„ì‚°í•  ë°©í–¥ì€? : ì—´(column)
+# í•©ì„ êµ¬í•˜ëŠ” í•¨ìˆ˜ëŠ”? : sum()
+# í‰ê· ì„ êµ¬í•˜ëŠ” í•¨ìˆ˜ëŠ”? : mean()
 
 apply(iris[, 1:4], 2, mean)
 colSums(iris[, 1:4])
@@ -269,24 +270,24 @@ colMeans(iris[, 1:4])
 result <- lapply(1:3, function(x) { x*2 })
 result
 
-# apply() ÇÔ¼ö¸¦ ÀÌ¿ëÇØ¼­ °°Àº °á°ú¸¦ ¾ò¾îº¸ÀÚ.
+# apply() í•¨ìˆ˜ë¥¼ ì´ìš©í•´ì„œ ê°™ì€ ê²°ê³¼ë¥¼ ì–»ì–´ë³´ìž.
 as.list(apply(matrix(1:3), 1, function(x) {x*2}))
 
-# ±×³É apply(1:3, 1, function(x) {x*2})) Àº ¾î¶»°Ô µÉ±î?
+# ê·¸ëƒ¥ apply(1:3, 1, function(x) {x*2})) ì€ ì–´ë–»ê²Œ ë ê¹Œ?
 
-# °á°ú¹°¿¡ Á÷Á¢ Á¢±ÙÇÏ·Á¸é index¸¦ »ç¿ëÇÑ´Ù.
+# ê²°ê³¼ë¬¼ì— ì§ì ‘ ì ‘ê·¼í•˜ë ¤ë©´ indexë¥¼ ì‚¬ìš©í•œë‹¤.
 result[[1]]
 
-# inputÀ¸·Î list°¡ °¡´ÉÇÏ´Ù.
+# inputìœ¼ë¡œ listê°€ ê°€ëŠ¥í•˜ë‹¤.
 x <- list(a = 1:3, b = 4:6)
 x
 
 lapply(x, mean)
 
-# iris µ¥ÀÌÅÍ¿¡µµ Àû¿ëÇÒ ¼ö ÀÖ´Ù.
+# iris ë°ì´í„°ì—ë„ ì ìš©í•  ìˆ˜ ìžˆë‹¤.
 lapply(iris[, 1:4], mean)
 
-# apply ÇÔ¼ö¿Í ¶È°°Àº °á°ú¸¦ ¾òÀ¸·Á¸é?
+# apply í•¨ìˆ˜ì™€ ë˜‘ê°™ì€ ê²°ê³¼ë¥¼ ì–»ìœ¼ë ¤ë©´?
 apply(iris[, 1:4], 2, mean)
 unlist(lapply(iris[, 1:4], mean))
 
@@ -297,27 +298,27 @@ iris_mean <- sapply(iris[, 1:4], mean)
 iris_mean
 class(iris_mean)
 
-# °á°ú¹°À» µ¥ÀÌÅÍ ÇÁ·¹ÀÓÀ¸·Î ÀúÀåÇÏ°í ½Í´Ù¸é
+# ê²°ê³¼ë¬¼ì„ ë°ì´í„° í”„ë ˆìž„ìœ¼ë¡œ ì €ìž¥í•˜ê³  ì‹¶ë‹¤ë©´
 as.data.frame(iris_mean)
 
-# °á°ú¹°ÀÌ ¿øÇÏ´Â ÇüÅÂ°¡ ¾Æ´Ñ °Í °°Àºµ¥?
+# ê²°ê³¼ë¬¼ì´ ì›í•˜ëŠ” í˜•íƒœê°€ ì•„ë‹Œ ê²ƒ ê°™ì€ë°?
 as.data.frame(t(iris_mean))
 
-# °¢ º¯¼ö°¡ ¾î¶² ÇüÅÂÀÎÁöµµ ¾Ë ¼ö ÀÖ´Ù.
+# ê° ë³€ìˆ˜ê°€ ì–´ë–¤ í˜•íƒœì¸ì§€ë„ ì•Œ ìˆ˜ ìžˆë‹¤.
 sapply(iris, class)
 
-# ¸ðµç ¼öÄ¡ µ¥ÀÌÅÍ¿¡¼­ 3º¸´Ù Å« °ÍÀÌ ¹ºÁö ¾Ë°í ½Í´Ù.
+# ëª¨ë“  ìˆ˜ì¹˜ ë°ì´í„°ì—ì„œ 3ë³´ë‹¤ í° ê²ƒì´ ë­”ì§€ ì•Œê³  ì‹¶ë‹¤.
 greater_than_three <- sapply(iris[, 1:4], function(x) { x > 3 })
 head(greater_than_three)
 
-# sapply()´Â ÇÑ °¡Áö µ¥ÀÌÅÍ Å¸ÀÔ¸¸ ¹ÝÈ¯ÇÑ´Ù.
+# sapply()ëŠ” í•œ ê°€ì§€ ë°ì´í„° íƒ€ìž…ë§Œ ë°˜í™˜í•œë‹¤.
 # 
 # 
 
 # tapply() ----------------------------------------------------------------
 
-# È¦¼ö¿Í Â¦¼ö¸¦ µû·Îµû·Î ´õÇÏ°í ½Í´Ù.
-# È¦¼ö¿Í Â¦¼ö¸¦ ¾î¶»°Ô ±¸ºÐÇÏÁö?
+# í™€ìˆ˜ì™€ ì§ìˆ˜ë¥¼ ë”°ë¡œë”°ë¡œ ë”í•˜ê³  ì‹¶ë‹¤.
+# í™€ìˆ˜ì™€ ì§ìˆ˜ë¥¼ ì–´ë–»ê²Œ êµ¬ë¶„í•˜ì§€?
 
 1:10
 odd.even <- 1:10 %% 2 == 1
@@ -327,25 +328,25 @@ odd.even
 
 tapply(1:10, odd.even , sum)
 
-# iris µ¥ÀÌÅÍ¸¦ ´Ù½Ã »ç¿ëÇÑ´Ù.
-# ²É¹ÞÄ§ÀÇ ±æÀÌ¸¦ º×²ÉÀÇ Á¾·ùº°·Î Æò±ÕÀ» ±¸ÇÏ°í ½Í´Ù.
+# iris ë°ì´í„°ë¥¼ ë‹¤ì‹œ ì‚¬ìš©í•œë‹¤.
+# ê½ƒë°›ì¹¨ì˜ ê¸¸ì´ë¥¼ ë¶“ê½ƒì˜ ì¢…ë¥˜ë³„ë¡œ í‰ê· ì„ êµ¬í•˜ê³  ì‹¶ë‹¤.
 
 tapply(iris$Sepal.Length, iris$Species, mean)
 tapply(iris$Sepal.Length, iris$Species, median)
 tapply(iris$Sepal.Length, iris$Species, max)
 tapply(iris$Sepal.Length, iris$Species, min)
 
-# Á¶±Ý ´õ Çö½ÇÀûÀÎ µ¥ÀÌÅÍ¸¦ »ý°¢ÇØº¸ÀÚ.
+# ì¡°ê¸ˆ ë” í˜„ì‹¤ì ì¸ ë°ì´í„°ë¥¼ ìƒê°í•´ë³´ìž.
 season <- c("Spring", "Summer", "Fall", "Winter")
 sex <- c("Male", "Female")
 sales <- matrix(1:8, ncol = 2, dimnames=list(season, sex))
 
-# S/S, F/W ³²¼º, ¿©¼ºº°·Î Áý°èÇÏ°í ½Í´Ù.
-# °¢°¢À» ÇÏ³ªÀÇ Ä«Å×°í¸®·Î ÀâÀ¸¸é...
+# S/S, F/W ë‚¨ì„±, ì—¬ì„±ë³„ë¡œ ì§‘ê³„í•˜ê³  ì‹¶ë‹¤.
+# ê°ê°ì„ í•˜ë‚˜ì˜ ì¹´í…Œê³ ë¦¬ë¡œ ìž¡ìœ¼ë©´...
 index <- matrix(rep(1:4, each = 2), ncol = 2)
 index
 
-# ÀÌÁ¦ °á°ú¸¦ Ãâ·ÂÇØº¸ÀÚ.
+# ì´ì œ ê²°ê³¼ë¥¼ ì¶œë ¥í•´ë³´ìž.
 result <- tapply(sales, index, sum)
 names(result) <- c("Male S/S", "Male F/W", "Female S/S", "Female F/W")
 result
