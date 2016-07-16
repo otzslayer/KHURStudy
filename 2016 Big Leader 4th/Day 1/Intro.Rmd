@@ -2,14 +2,10 @@
 title: "Introduction"
 author: "Jaeyoon Han"
 date: "`r Sys.Date()`"
-output:
-  rmdformats::html_clean:
-    highlight: pygments
-    css: ~/Google Drive/ML Lecture/rmarkdown.css
+output: github_document
 ---
 
-
-```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+```{r setup, include=FALSE}
 library(knitr)
 library(rmdformats)
 library(ggplot2)
@@ -17,8 +13,8 @@ library(MASS)
 library(dplyr)
 
 ## Global options
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE, tidy = TRUE, comment = NA, warning = FALSE,
-                      fig.height = 4, fig.width = 7, fig.retina = 2, fig.align = "center")
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE)
 custom_theme <- theme_bw(base_family = "Open Sans") +
         theme(legend.position = "right",
               axis.title.x = element_text(size = 11, margin = margin(10, 0, 0, 0), face = "bold"),
@@ -312,20 +308,3 @@ while(i <= 100){
         i <- i + 1 # 하나를 더해주지 않으면 무한 반복이 일어난다.
 }
 ```
-
-# 숙제
-
-```{r}
-for(i in 1:9){
-        for(j in 1:10){
-                cat(i, "*", j, "=", i*j, "\t")
-                if(j == 5){
-                        cat("\n")
-                }
-                if(j == 10){
-                        cat("\n==========================\n")
-                }
-        }
-}
-```
-
