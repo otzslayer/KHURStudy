@@ -1,7 +1,7 @@
 Introduction
 ================
 Jaeyoon Han
-2016-07-17
+2016-07-18
 
 R Basic Syntax
 ==============
@@ -411,6 +411,9 @@ summary(gender)
     여성 남성 
       30   20 
 
+Matrix
+------
+
 ``` r
 mat <- matrix(data = 1:9, ncol = 3)
 mat
@@ -482,6 +485,9 @@ dim(mat)
 
     [1] 3 3
 
+List
+----
+
 ``` r
 grade <- list(name = c("A", "B", "C"), score = c(90, 80, 70), grade = c("A+", 
     "B+", "B0"))
@@ -530,6 +536,9 @@ grade[[1]][1]
 
     [1] "A"
 
+Data Frame
+----------
+
 ``` r
 grade_df <- data.frame(name = c("A", "B", "C"), score = c(90, 80, 70), grade = c("A+", 
     "B+", "B0"))
@@ -561,7 +570,7 @@ x <- sample(1:100, 1)
 x
 ```
 
-    [1] 40
+    [1] 17
 
 ``` r
 if ((x%%2) == 1) {
@@ -571,7 +580,7 @@ if ((x%%2) == 1) {
 }
 ```
 
-    [1] "40는 짝수입니다."
+    [1] "17는 홀수입니다."
 
 ``` r
 x <- 1:10

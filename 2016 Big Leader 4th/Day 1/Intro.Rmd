@@ -170,6 +170,8 @@ levels(gender) <- c("여성", "남성")
 summary(gender)
 ```
 
+## Matrix
+
 ```{r}
 mat <- matrix(data = 1:9, ncol = 3)
 mat
@@ -187,6 +189,8 @@ mat / 2
 dim(mat)
 ```
 
+## List
+
 ```{r}
 grade <- list(name = c("A", "B", "C"),
               score = c(90, 80, 70),
@@ -202,6 +206,8 @@ grade[[3]]
 
 grade[[1]][1]
 ```
+
+## Data Frame
 
 ```{r}
 grade_df <- data.frame(name = c("A", "B", "C"),
