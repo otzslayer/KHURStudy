@@ -1,0 +1,326 @@
+---
+title: "Data Handling"
+author: "Jaeyoon Han"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::html_clean:
+    highlight: pygments
+    css: ~/Google Drive/ML Lecture/rmarkdown.css
+---
+
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11,
+                                          margin = margin(10, 0, 0, 0),
+                                          face = "bold"),
+              axis.title.y = element_text(size = 11,
+                                          margin = margin(0, 10, 0, 0),
+                                          face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Data Input/Output
+
+```{r}
+iris <- read.csv("iris.csv")
+write.csv(iris, "iris.csv", row.names = FALSE)
+```
+
+# Apply Functions
+
+## apply()
+
+```{r}
+mat <- matrix(1:9, ncol = 3)
+mat
+```
+
+주어진 행렬에 대해서 각 행의 합과 각 열의 합을 구해보자.
+
+```{r}
+# mat 행렬을 행(1) 단위로 나눠서 합(sum)을 구한다.
+apply(mat, 1, sum)
+
+# mat 행렬을 열(2) 단위로 나눠서 합(sum)을 구한다.
+apply(mat, 2, sum)
+```
+
+```{r}
+head(iris)
+apply(iris[, 1:4], 2, mean)
+apply(iris[, 1:4], 2, median)
+```
+
+```{r}
+meanIris <- apply(iris[, 1:4], 2, mean)
+class(meanIris)
+```
+
+## lapply()
+
+무조건 열로 나눈다.
+
+```{r}
+meanIris <- lapply(iris[, 1:4], mean)
+meanIris
+class(meanIris)
+unlist(meanIris)                # Vector
+data.frame(meanIris)            # Data Frame
+```
+
+## sapply()
+
+무조건 열로 나눈다.
+
+```{r}
+meanIris <- sapply(iris[, 1:4], mean)
+meanIris                        # Vector
+
+greaterThanThree <- function(x){
+        x > 3
+}
+
+check <- sapply(iris[, 1:4], greaterThanThree)
+head(check)
+head(iris)
+```
+
+
+# dplyr Package
+
+```{r}
+library(dplyr)
+library(nycflights13)
+```
+
+## filter()
+
+```{r, eval = FALSE}
+flights[flights$month == 5, ]
+filter(flights, month == 7)
+filter(flights, dep_time > 1630)
+filter(flights, month == 7, dep_time > 1630)
+```
+
+## select()
+```{r, eval = FALSE}
+flights[, c("flights", "dep_time", "arr_time")]
+select(flights, dep_time, arr_time)
+
+# 1.  1:10처럼 원하는 칼럼을 연속적으로 뽑을 수 있다.
+select(flights, month:arr_delay)
+
+# 2. 칼럼 이름에 특정 문자를 포함하고 있는 칼럼을 뽑아낼 수 있다.
+select(flights, contains("time"), contains("delay"))
+
+# 3. 조건 앞에 -를 붙이면 해당 칼럼을 뺄 수 있다.
+select(flights, -year)
+select(flights, -(year:day))
+```
+
+## arrange()
+
+```{r, eval = FALSE}
+arrange(flights, distance)
+
+arrange(flights, distance, dep_time)
+
+arrange(flights, desc(distance))
+```
+
+## mutate()
+
+```{r, eval = FALSE}
+flightsSpeed <- mutate(flights, speed = distance / air_time * 60)
+flightsSpeed <- select(flightsSpeed, distance, air_time, speed)
+flightsSpeed
+```
+
+## group_by() / summarise()
+
+키노트 예제
+
+```{r}
+Population <- data.frame(No = 1:6, Region = rep(c("Europe", "Asia", "N.America"), each = 2),
+                         Nationality = c("England", "Germany", "Korea", "Japan", "Canada", "USA"),
+                         Population = c(53.8, 80.7, 50, 126.3, 36.2, 324))
+Population
+
+grouped <- group_by(Population, Region)
+grouped
+summarise(grouped, Average = mean(Population))
+```
+
+## Join
+
+```{r}
+Nation <- data.frame(No = 1:4, Region = rep("Europe", 4),
+                     Nationality = c("England", "Germany", "France", "Italy"))
+
+Nation
+
+Capital <- data.frame(Nationality = c("Denmark", "England", "France", "Germany", "Hungary", "Italy"),
+                      Capital = c("Copenhagen", "London", "Paris", "Berlin", "Budapest", "Rome"))
+Capital
+
+left_join(Nation, Capital)
+```
+
+
+## Pipe Operator
+
+```{r}
+a1 <- filter(flights, month == 7 | month == 8)
+a2 <- select(a1, month:day, contains("delay"), origin, dest, distance, air_time)
+a3 <- mutate(a2, speed = distance / air_time * 60)
+a4 <- group_by(a3, dest)
+a5 <- summarise(a4,
+                arr_delay_mean = mean(arr_delay, na.rm = TRUE))
+a6 <- arrange(a5, desc(arr_delay_mean))
+
+# 이 무슨...
+
+new_data <- flights %>%
+        filter(month == 7 | month == 8) %>%
+        select(month:day, contains("delay"), origin, dest, distance, air_time) %>%
+        mutate(speed = distance / air_time * 60) %>%
+        group_by(dest) %>%
+        summarise(arr_delay_mean = mean(arr_delay, na.rm = TRUE)) %>%
+        arrange(desc(arr_delay_mean))
+
+head(new_data)
+```
+
+# reshape2 package
+
+## Layouts
+
+- Wide Layout : 용량이 작고, 보기엔 편하다. 높은 가독성.  
+- Long Layout : 시각화 작업 시에 굉장히 편하지만 용량이 커지고 가독성이 떨어진다.
+
+```{r}
+# Wide Layout
+students_wide <- data.frame(student = c("A", "B"),
+                            korean = c(80, 68),
+                            math = c(72, 94),
+                            english = c(77, 82))
+
+# Long Layout
+students_long <- data.frame(student = rep(c("A", "B")),
+                            subject = rep(c("korean", "math", "english"), each = 2),
+                            score = c(80, 68, 72, 94, 77, 82))
+```
+
+```{r}
+library(reshape2)
+```
+
+## melt()
+
+- `id.vars` : 기존의 인스턴스들을 구분할 수 있는 칼럼
+- `measure.vars` : 하나의 칼럼으로 나타내고자 하는 칼럼의 이름들
+- `variable.name` : `measure.vars`를 포함하고 있는 칼럼의 이름
+- `value.name` : `measure.vars`의 값들을 나타내는 칼럼의 이름
+
+```{r}
+# melt(data, id.vars, measure.vars, variable.name,
+#      value.name, na.rm, factorsAsStrings = TRUE)
+
+molten_students <- melt(students_wide, id.vars = "student",
+                        measure.vars = c("korean", "math", "english"),
+                        variable.name = "subject",
+                        value.name = "score")
+molten_students
+
+# 만약 measure.vars 의 대상이 모든 칼럼일 때는, 빼도 된다!
+molten_students <- melt(students_wide, id.vars = "student",
+                        variable.name = "subject",
+                        value.name = "score")
+molten_students
+```
+
+## dcast()
+
+```{r}
+# dcast(data, formula)
+dcast(molten_students, student ~ subject)
+```
+
+## Airquality
+
+```{r}
+data("airquality")
+str(airquality)
+head(airquality)
+summary(airquality)
+
+# 결측값이 제법 있다. 이걸 잘 다뤄야 데이터가 깔끔해진다.
+
+# 열 이름이 대문자 ===> 소문자로 바꾸고 싶다.
+names(airquality) <- tolower(names(airquality))
+
+# 얘는 무슨 레이아웃일까?
+# Wide, now.
+
+# long-layout으로 바꿔주자
+# 어떤걸로 데이터를 구분해야할까? : 월, 일 => id.vars
+# 하나의 칼럼으로 나타낼 수 있는건? : 대기질 데이터들 (나머지 칼럼 전부)
+# 변수 이름을 좀 더 의미있게 써주는 것이 좋다
+# 그러므로, climate_variable 로 이름을 정하자.
+
+molten_airq <- melt(airquality, id.vars = c("month", "day"),
+                    variable.name = "climate_variable", 
+                    value.name = "climate_value")
+head(molten_airq)
+
+# 결측값이 꼴보기 싫다면
+molten_airq <- melt(airquality, id.vars = c("month", "day"),
+                    variable.name = "climate_variable", 
+                    value.name = "climate_value",
+                    na.rm = TRUE)
+head(molten_airq)
+
+# 다시 wide-layout으로 바꿔주자.
+# 데이터 프레임 형태로 반환하려고 한다.
+wide_airq <- dcast(molten_airq,
+                   month + day ~ climate_variable,
+                   value.var = "climate_value")
+head(wide_airq)
+```
+
+# 과제
+
+```{r}
+library(ggplot2)
+data(diamonds)
+
+head(diamonds)
+
+homework <- diamonds %>%
+    filter(clarity != "I1") %>%
+    select(-(x:z)) %>%
+    mutate(krw = price * 1170) %>%
+    arrange(carat) %>%
+    group_by(cut, color, clarity) %>%
+    summarise(krw_average = mean(krw))
+
+head(homework)
+```
+
