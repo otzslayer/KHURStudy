@@ -73,6 +73,12 @@ meanIris <- apply(iris[, 1:4], 2, mean)
 class(meanIris)
 ```
 
+```{r}
+diff_iris <- apply(iris[, 1:4], 2, diff)
+head(diff_iris)
+```
+
+
 ## lapply()
 
 무조건 열로 나눈다.
@@ -84,6 +90,11 @@ class(meanIris)
 unlist(meanIris)                # Vector
 data.frame(meanIris)            # Data Frame
 ```
+
+```{r}
+lapply(iris[, 1:4], diff)
+```
+
 
 ## sapply()
 
@@ -181,6 +192,22 @@ Capital <- data.frame(Nationality = c("Denmark", "England", "France", "Germany",
 Capital
 
 left_join(Nation, Capital)
+```
+
+```{r}
+head(flights)
+head(airports)
+
+left <- select(flights, year:dep_time, arr_time, origin)
+right <- select(flights, dest)
+
+left <- left_join(left, airports, by = c("origin" = "faa")) %>%
+    select(-(lat:dst))
+right <- left_join(right, airports, by = c("dest" = "faa")) %>%
+    select(-(lat:dst))
+
+new_flights <- bind_cols(left, right)
+head(new_flights)
 ```
 
 
