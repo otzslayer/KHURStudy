@@ -30,7 +30,7 @@ data.frame(x = 1:7, y = 3:9) %>% ggplot(aes(x = x, y = y)) + geom_smooth() +
 밑의 그래프는 TV 광고량에 대한 매출 데이터를 선형회귀법을 이용해 모델링한 결과물입니다.
 
 <center>
-<img src="./images/figure1.png" width = 500px>
+<img src="images/figure1.png" width = 500px>
 </center>
 수많은 데이터 사이에 그어져 있는 파란선이 **회귀선(Regression Line)**입니다. 데이터를 기반으로 알아낸 예측값들을 나타내는 선이죠. 점들 사이에 적당하게 파란선을 그으면 회귀선이 될 수 있지 않을까하는 의심이 들 수 있습니다. 하지만 그래프에 있는 파란선은 엄밀한 수학적 근거에 기반을 둔 결과입니다.
 
