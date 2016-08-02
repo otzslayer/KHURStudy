@@ -1,0 +1,75 @@
+---
+title: "Occupancy Detection"
+author: "Jaeyoon Han"
+output:
+  html_document:
+    highlight: pygments
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11,
+                                          margin = margin(10, 0, 0, 0),
+                                          face = "bold"),
+              axis.title.y = element_text(size = 11,
+                                          margin = margin(0, 10, 0, 0),
+                                          face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Loading Data
+
+밑의 코드는 고정입니다. 수정하지 말아주세요. :)
+
+```{r}
+train <- read.csv("https://github.com/otzslayer/KHURStudy/raw/master/2016%20Big%20Leader%204th/Data/occupancy_train.csv")
+test <- read.csv("https://github.com/otzslayer/KHURStudy/raw/master/2016%20Big%20Leader%204th/Data/occupancy_test.csv")
+
+accuracy <- function(actual, predict){
+        return(sum(actual == predict) / length(actual))
+}
+
+sigmoid <- function(x){1 / (1 + exp(-x))}
+
+train$Occupancy <- factor(train$Occupancy)
+test$Occupancy <- factor(test$Occupancy)
+testOccupancy <- test$Occupancy
+test$Occupancy <- NULL
+
+```
+
+# Data Information
+
+### Attributes Description
+
+- date time year-month-day hour:minute:second 
+
+- Temperature, in Celsius 
+
+- Relative Humidity, % 
+
+- Light, in Lux 
+
+- CO2, in ppm 
+
+- Humidity Ratio, Derived quantity from temperature and relative humidity, in kgwater-vapor/kg-air 
+
+- Occupancy, 0 or 1, 0 for not occupied, 1 for occupied status
+
+# Do Logistic Regression
