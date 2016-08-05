@@ -1,0 +1,168 @@
+---
+title: "Occupancy Detection"
+author: "Jaeyoon Han"
+output:
+  html_document:
+    highlight: pygments
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11,
+                                          margin = margin(10, 0, 0, 0),
+                                          face = "bold"),
+              axis.title.y = element_text(size = 11,
+                                          margin = margin(0, 10, 0, 0),
+                                          face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Loading Data
+
+밑의 코드는 고정입니다. 수정하지 말아주세요. :)
+
+```{r}
+train <- read.csv("https://github.com/otzslayer/KHURStudy/raw/master/2016%20Big%20Leader%204th/Data/occupancy_train.csv")
+test <- read.csv("https://github.com/otzslayer/KHURStudy/raw/master/2016%20Big%20Leader%204th/Data/occupancy_test.csv")
+
+accuracy <- function(actual, predict){
+        return(sum(actual == predict) / length(actual))
+}
+
+sigmoid <- function(x){1 / (1 + exp(-x))}
+
+train$Occupancy <- factor(train$Occupancy)
+test$Occupancy <- factor(test$Occupancy)
+testOccupancy <- test$Occupancy
+test$Occupancy <- NULL
+
+```
+
+# Data Information
+
+### Attributes Description
+
+- date time year-month-day hour:minute:second 
+
+- Temperature, in Celsius 
+
+- Relative Humidity, % 
+
+- Light, in Lux 
+
+- CO2, in ppm 
+
+- Humidity Ratio, Derived quantity from temperature and relative humidity, in kgwater-vapor/kg-air 
+
+- Occupancy, 0 or 1, 0 for not occupied, 1 for occupied status
+
+# Do Logistic Regression
+
+```{r}
+accuracy <- function(actual, predict){
+        return(sum(actual == predict) / length(actual))
+}
+
+sigmoid <- function(x){1 / (1 + exp(-x))}
+
+occupancy_train <- read.csv("occupancy_train.csv", stringsAsFactors = FALSE)
+occupancy_test <- read.csv("occupancy_test.csv", stringsAsFactors = FALSE)
+
+occupancy_train$date <- as.POSIXct(occupancy_train$date)
+occupancy_test$date <- as.POSIXct(occupancy_test$date)
+
+occupancy_train$Occupancy <- factor(occupancy_train$Occupancy)
+occupancy_test$Occupancy <- factor(occupancy_test$Occupancy)
+
+###############
+## 요일 검출 ##
+###############
+library(lubridate)
+
+occupancy_train$Weekdays <- weekdays(occupancy_train$date)
+occupancy_test$Weekdays <- weekdays(occupancy_test$date)
+
+occupancy_train$Weekend <- ifelse(occupancy_train$Weekdays %in% c("Saturday", "Sunday"), 1, 0)
+occupancy_test$Weekend <- ifelse(occupancy_test$Weekdays %in% c("Saturday", "Sunday"), 1, 0)
+
+occupancy_train$Hour <- hour(occupancy_train$date)
+occupancy_test$Hour <- hour(occupancy_test$date)
+
+occupancy_train$DayNight <- ifelse(occupancy_train$Hour > 7 & occupancy_train$Hour < 18, 1, 0)
+occupancy_test$DayNight <- ifelse(occupancy_test$Hour > 7 & occupancy_test$Hour < 18, 1, 0)
+
+occupancy_train$Weekend <- factor(occupancy_train$Weekend)
+occupancy_test$Weekend <- factor(occupancy_test$Weekend)
+occupancy_train$DayNight <- factor(occupancy_train$DayNight)
+occupancy_test$DayNight <- factor(occupancy_test$DayNight)
+
+str(occupancy_train)
+str(occupancy_test)
+
+occupancy_train %>%
+        group_by(Hour, Occupancy) %>%
+        summarise(Count = n()) %>%
+        ggplot(aes(x = factor(Hour), y = Count, fill = Occupancy)) +
+                geom_bar(stat = "identity", position = "dodge") +
+                scale_fill_brewer(palette = "Pastel1")
+
+occupancy_train %>%
+        group_by(Weekdays, Occupancy) %>%
+        summarise(Count = n()) %>%
+        ggplot(aes(x = Weekdays, y = Count, fill = Occupancy)) +
+                geom_bar(stat = "identity", position = "dodge") +
+                scale_fill_brewer(palette = "Pastel1")
+
+occu_logit <- glm(Occupancy ~ Temperature + Humidity + Light + CO2 + HumidityRatio + Weekend + DayNight,
+                  data = occupancy_train, family = 'binomial')
+summary(occu_logit)
+
+occu_pred_x <- predict(occu_logit, occupancy_test)
+occu_pred <- predict(occu_logit, occupancy_test, type = 'response')
+occu_pred_binary <- ifelse(occu_pred > 0.5, 1, 0)
+accuracy(occupancy_test$Occupancy, occu_pred_binary)
+
+occu_pred_df <- data.frame(x = occu_pred_x, y = occu_pred, binary = occu_pred_binary) %>%
+        filter(abs(occu_pred_x) < 10)
+
+ggplot(occu_pred_df) + 
+        geom_jitter(aes(x = x, y = y), width = 0.1, height = 0.1, alpha = .2) +
+        coord_cartesian(ylim = c(-0.1, 1.1), xlim = c(-10, 10)) + 
+        stat_function(fun = sigmoid, xlim = c(-10, 10), color = "#56A9F6") +
+        geom_point(aes(x = x, y = binary + sign(x) * 0.1), shape = "|", color = "#f18f2e", size = 2, alpha = .2) +
+        xlab(NULL) + ylab(NULL) +
+        scale_y_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1.0))
+```
+
+```{r}
+outlierPoints <- which(abs(stdres(occu_logit)) > 5)
+leveragePoints <- which(hatvalues(occu_logit) > 0.05)
+needToRemove <- unique(c(outlierPoints, leveragePoints))
+
+newTrain <- occupancy_train[-needToRemove, ]
+
+occu_logit2 <- glm(Occupancy ~ Temperature + Humidity + Light + CO2 + HumidityRatio + Weekend + DayNight,
+                  data = newTrain, family = 'binomial')
+summary(occu_logit2)
+
+occu_pred_x <- predict(occu_logit2, occupancy_test)
+occu_pred <- predict(occu_logit2, occupancy_test, type = 'response')
+occu_pred_binary <- ifelse(occu_pred > 0.5, 1, 0)
+accuracy(occupancy_test$Occupancy, occu_pred_binary)
+```
