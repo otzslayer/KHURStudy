@@ -1,0 +1,94 @@
+---
+title: "Diabetes Diagnosis"
+author: "Jaeyoon Han"
+output:
+  html_document:
+    highlight: pygments
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11,
+                                          margin = margin(10, 0, 0, 0),
+                                          face = "bold"),
+              axis.title.y = element_text(size = 11,
+                                          margin = margin(0, 10, 0, 0),
+                                          face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Loading Data
+
+밑의 코드는 고정입니다. 수정하지 말아주세요. :)
+
+```{r}
+library(caret)
+library(ISLR)
+library(e1071)
+library(dplyr)
+data(Auto)
+head(Auto)
+dim(Auto)
+Auto <- Auto %>%
+        mutate(mileage = factor(ifelse(Auto$mpg > median(Auto$mpg), 1, 0)))
+set.seed(123)
+split <- createDataPartition(y = Auto$mileage, p = 0.7, list = FALSE)
+train <- Auto[split, ]
+test <- Auto[-split, ]
+train <- train[-c(1, 9)]
+test <- test[-c(1, 9)]
+```
+
+# Data Information
+
+### Data Description
+
+Gas mileage, horsepower, and other information for 392 vehicles.
+
+### Attributes Description
+
+A data frame with 392 observations on the following  variables.
+
+`mileage`
+mileage, Good = 1, Bad = 0
+
+`cylinders`
+Number of cylinders between 4 and 8
+
+`displacement`
+Engine displacement (cu. inches)
+
+`horsepower`
+Engine horsepower
+
+`weight`
+Vehicle weight (lbs.)
+
+`acceleration`
+Time to accelerate from 0 to 60 mph (sec.)
+
+`year`
+Model year (modulo 100)
+
+`origin`
+Origin of car (1. American, 2. European, 3. Japanese)
+
+The orginal data contained 408 observations but 16 observations with missing values were removed.
+
+# Do SVM

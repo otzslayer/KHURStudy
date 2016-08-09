@@ -1,0 +1,206 @@
+---
+title: "Diabetes Diagnosis"
+author: "Jaeyoon Han"
+output:
+  html_document:
+    highlight: pygments
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE,
+                      tidy = TRUE, comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+        theme(legend.position = "right",
+              axis.title.x = element_text(size = 11,
+                                          margin = margin(10, 0, 0, 0),
+                                          face = "bold"),
+              axis.title.y = element_text(size = 11,
+                                          margin = margin(0, 10, 0, 0),
+                                          face = "bold"),
+              plot.title = element_text(family = "Open Sans"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Loading Data
+
+밑의 코드는 고정입니다. 수정하지 말아주세요. :)
+
+```{r}
+library(MASS)
+library(dplyr)
+data(Pima.tr)       # Training Data
+data(Pima.te)       # Test Data
+
+train_labels <- Pima.tr$type
+test_labels <- Pima.te$type
+Pima.tr$type <- NULL
+Pima.te$type <- NULL
+
+accuracy <- function(actual, predict){
+        return(sum(actual == predict) / length(actual))
+}
+
+
+```
+
+# Data Information
+
+### Data Description
+
+A population of women who were at least 21 years old, of Pima Indian heritage and living near Phoenix, Arizona, was tested for diabetes according to World Health Organization criteria. The data were collected by the US National Institute of Diabetes and Digestive and Kidney Diseases. We used the 532 complete records after dropping the (mainly missing) data on serum insulin.
+
+### Attributes Description
+
+These data frames contains the following columns:
+
+`npreg` : 
+number of pregnancies.
+
+`glu` : 
+plasma glucose concentration in an oral glucose tolerance test.
+
+`bp` : 
+diastolic blood pressure (mm Hg).
+
+`skin` : 
+triceps skin fold thickness (mm).
+
+`bmi` : 
+body mass index (weight in kg/(height in m)\^2).
+
+`ped` : 
+diabetes pedigree function.
+
+`age` : 
+age in years.
+
+`type` : 
+Yes or No, for diabetic according to WHO criteria.
+
+# Do k-Nearest Neighbor
+
+```{r}
+library(MASS)
+library(dplyr)
+data(Pima.tr)
+data(Pima.te)
+str(Pima.tr)
+str(Pima.te)
+summary(Pima.tr)
+summary(Pima.te)
+```
+
+```{r}
+library(caret)
+library(class)
+library(reshape2)
+
+train_labels <- Pima.tr$type
+test_labels <- Pima.te$type
+Pima.tr$type <- NULL
+Pima.te$type <- NULL
+diabetes <- knn(train = Pima.tr, test = Pima.te, cl = train_labels, k = 15)
+confusionMatrix(diabetes, test_labels, positive = "No")
+
+odds <- seq(1, 25, by = 2)
+Result3 <- data.frame(k = NULL, Accuracy = NULL, Sensitivity = NULL,
+                      Specificity = NULL, PosPredValue = NULL, NegPredValue = NULL)
+for(i in odds){
+        pred <- knn(train = Pima.tr, test = Pima.te, cl = train_labels, k = i)
+        confMat <- confusionMatrix(pred, test_labels, positive = "No")
+        currentResult <- data.frame(k = i, Accuracy = confMat$overall[1],
+                                    Sensitivity = confMat$byClass[1],
+                                    Specificity = confMat$byClass[2],
+                                    PosPredValue = confMat$byClass[3],
+                                    NegPredValue = confMat$byClass[4])
+        Result3 <- bind_rows(Result3, currentResult)
+}
+Result3
+# k = 21
+
+moltenResult <- melt(Result3, id.vars = "k")
+ggplot(data = moltenResult, aes(x = k, y = value, color = variable)) +
+        geom_line()
+```
+
+
+```{r}
+normalize <- function(x){
+        return ((x - min(x)) / (max(x) - min(x)))
+}
+
+Pima <- dplyr::bind_rows(Pima.tr, Pima.te)
+Pima_n <- as.data.frame(lapply(Pima, normalize))
+Pima_n_tr <- Pima_n[1:200, ]
+Pima_n_te <- Pima_n[201:nrow(Pima_n), ]
+
+odds <- seq(1, 25, by = 2)
+Result4 <- data.frame(k = NULL, Accuracy = NULL, Sensitivity = NULL, Specificity = NULL, PosPredValue = NULL, NegPredValue = NULL)
+for(i in odds){
+        pred <- knn(train = Pima_n_tr, test = Pima_n_te, cl = train_labels, k = i)
+        confMat <- confusionMatrix(pred, test_labels, positive = "No")
+        currentResult <- data.frame(k = i, Accuracy = confMat$overall[1], Sensitivity = confMat$byClass[1],
+                Specificity = confMat$byClass[2], PosPredValue = confMat$byClass[3], NegPredValue = confMat$byClass[4])
+        Result4 <- dplyr::bind_rows(Result4, currentResult)
+}
+Result4
+
+moltenResult <- melt(Result4, id.vars = "k")
+ggplot(data = moltenResult, aes(x = k, y = value, color = variable)) +
+        geom_line()
+```
+
+```{r}
+Pima <- dplyr::bind_rows(Pima.tr, Pima.te)
+Pima_z <- as.data.frame(lapply(Pima, scale))
+Pima_z_tr <- Pima_z[1:200, ]
+Pima_z_te <- Pima_z[201:nrow(Pima_z), ]
+
+Result5 <- data.frame(k = NULL, Accuracy = NULL, Sensitivity = NULL, Specificity = NULL, PosPredValue = NULL, NegPredValue = NULL)
+for(i in odds){
+        pred <- knn(train = Pima_z_tr, test = Pima_z_te, cl = train_labels, k = i)
+        confMat <- confusionMatrix(pred, test_labels, positive = "No")
+        currentResult <- data.frame(k = i, Accuracy = confMat$overall[1], Sensitivity = confMat$byClass[1],
+                Specificity = confMat$byClass[2], PosPredValue = confMat$byClass[3], NegPredValue = confMat$byClass[4])
+        Result5 <- dplyr::bind_rows(Result5, currentResult)
+}
+Result5
+
+moltenResult <- melt(Result5, id.vars = "k")
+
+ggplot(data = moltenResult, aes(x = k, y = value, color = variable)) +
+        geom_line()
+```
+
+## ROC Curve
+
+```{r}
+library(ROCR)
+library(plotROC)
+pred <- knn(train = Pima_z_tr, test = Pima_z_te, cl = train_labels, k = 21, prob = TRUE)
+pred_prob <- attributes(pred)$prob
+fpr <- 1 - pred_prob
+roc_df <- data.frame(fpr = fpr, class = as.numeric(test_labels)-1)
+
+knn_roc <- ggplot(roc_df, aes(m = fpr, d = class)) + geom_roc()
+knn_roc
+calc_auc(knn_roc)
+```
+
+```{r}
+pred_knn <- prediction(1 - attributes(pred)$prob, test_labels)
+pred_knn <- performance(pred_knn, "tpr", "fpr")
+plot(pred_knn, avg= "threshold", colorize=T, lwd=3, main="Voilà, a ROC curve!")
+```
