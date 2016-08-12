@@ -1,0 +1,149 @@
+---
+title: "Tree Based Model"
+author: "Jaeyoon Han"
+date: "`r Sys.Date()`"
+output:
+    rmdformats::html_clean:
+        highlight: pygments
+        css: ~/Google Drive/ML Lecture/rmarkdown.css
+---
+
+
+```{r knitr_init, echo=FALSE, cache=FALSE, message = FALSE}
+library(knitr)
+library(rmdformats)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+
+## Global options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, prompt = FALSE, tidy = TRUE,
+                      comment = NA, warning = FALSE, cache = TRUE,
+                      fig.height = 4, fig.width = 7, fig.retina = 2,
+                      fig.align = "center")
+custom_theme <- theme_bw(base_family = "Open Sans") +
+    theme(legend.position = "right",
+          axis.title.x = element_text(size = 11, 
+                                      margin = margin(10, 0, 0, 0),
+                                      face = "bold"),
+          axis.title.y = element_text(size = 11,
+                                      margin = margin(0, 10, 0, 0),
+                                      face = "bold"),
+          plot.title = element_text(family = "Open Sans"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank())
+theme_set(custom_theme)
+```
+
+# Classic Decision Tree
+
+```{r}
+credit <- read.csv("https://github.com/otzslayer/KHURStudy/raw/master/2016%20Big%20Leader%204th/Data/credit.csv")
+summary(credit)
+```
+
+## CART Algorithm
+
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+set.seed(123)
+trainIdx <- sample(1:nrow(credit), size = nrow(credit) * 0.7)
+trainIdx <- sort(trainIdx)
+trainCredit <- credit[trainIdx, ]
+testCredit <- credit[-trainIdx, ]
+
+creditTree <- rpart(default ~ ., data = trainCredit, method = "class")
+creditTree
+
+predictCredit <- predict(creditTree, testCredit, type = "class")
+
+accuracy <- function(actual, predict){
+    sum(actual == predict) / length(actual)
+}
+
+accuracy(testCredit$default, predictCredit)
+
+rpart.plot(creditTree)
+confusionMatrix(predictCredit, testCredit$default)
+```
+
+## C5.0 Algorithm
+
+```{r}
+library(C50)
+library(partykit)
+C5 <- C5.0(default ~ ., data = trainCredit)
+summary(C5)
+
+C5_credit <- predict.C5.0(C5, testCredit)
+accuracy(testCredit$default, C5_credit)
+confusionMatrix(C5_credit, testCredit$default)
+```
+
+# Random Forest
+
+```{r}
+library(randomForest)
+set.seed(123)
+RF_Credit <- randomForest(default ~ ., data = trainCredit, ntree = 2000,
+                          importance = TRUE, replace = FALSE, proximity = TRUE)
+RF_Credit
+
+# RF_Credit$votes 를 실행하면 voting 결과 확인 가능
+
+varImp(RF_Credit)
+varImpPlot(RF_Credit)
+
+pred_RF_Credit <- predict(RF_Credit, testCredit)
+accuracy(testCredit$default, pred_RF_Credit)
+confusionMatrix(pred_RF_Credit, testCredit$default)
+```
+
+
+# Boosting
+
+```{r}
+library(xgboost)
+trainLabel <- as.numeric(trainCredit$default) - 1
+testLabel <- as.numeric(testCredit$default) - 1
+trainMat <- model.matrix(~., data = trainCredit[, -ncol(trainCredit)])
+testMat <- model.matrix(~., data = testCredit[, -ncol(testCredit)])
+
+set.seed(123)
+credit_xgboost <- xgboost(data = trainMat, label = trainLabel,
+                          max.depth = 10, eta = 0.5, subsample = 1, nrounds = 10,
+                          objective = "binary:logistic", eval_metric = "error")
+
+xgb_pred <- predict(credit_xgboost, testMat)
+xgb_pred <- ifelse(xgb_pred > 0.5, 1, 0)
+accuracy(testLabel, xgb_pred)
+```
+
+```{r}
+library(caret)
+
+cv.ctrl <- trainControl(method = "repeatedcv", repeats = 10, number = 5, 
+                        allowParallel = T)
+
+xgb.grid <- expand.grid(nrounds = seq(30, 100, by = 10),
+                        eta = c(0.1, 0.3, 0.5, 0.7),
+                        max_depth = 4:7,
+                        gamma = 0, colsample_bytree = 1, min_child_weight = 1)
+set.seed(123)
+xgb_tune <- train(trainMat, factor(trainLabel), method="xgbTree",
+                 trControl=cv.ctrl, tuneGrid=xgb.grid,
+                 verbose=T, metric="Kappa", nthread = 4)
+xgb_tune$bestTune
+
+credit_xgboost <- xgboost(data = trainMat, label = trainLabel,
+                          max.depth = 6, eta = 0.3, subsample = 1, nrounds = 50,
+                          objective = "binary:logistic", eval_metric = "error")
+
+xgb_pred <- predict(credit_xgboost, testMat)
+xgb_pred <- ifelse(xgb_pred > 0.5, 1, 0)
+accuracy(testLabel, xgb_pred)
+```
