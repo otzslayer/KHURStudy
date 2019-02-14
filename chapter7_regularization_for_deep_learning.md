@@ -218,7 +218,7 @@
 
   - Consider set of $k​$ regression models:
 
-    - Suppose that each model makes an error $\varepsilon_i$ on each example, with the errors drawn from a zero-mean multivariate normal distribution with variance $\mathbb{E}[\varepsilon^2_i] = v$ and covariances $\mathbb{E}[\varepsilon_i \varepsilon_j] = c$.
+    - Suppose that each model makes an error $\varepsilon_i​$ on each example, with the errors drawn from a zero-mean multivariate normal distribution with variance $\mathbb{E}[\varepsilon^2_i] = v​$ and covariances $\mathbb{E}[\varepsilon_i \varepsilon_j] = c​$.
 
     - Then the error made by the average prediction of all the ensemble models is $\frac{1}{k} \sum_i \varepsilon_i$.
 
@@ -238,9 +238,87 @@
 
 ## 7.12 Dropout
 
-- 
+- **Dropout** provides a computationally inexpensive but powerful method of regularizing a broad family of models.
+  - Dropout can be thought of as a method of making bagging practical for ensembles of very many large neural networks.
+- Dropout trains the ensemble consisting of all sub-networks that can be formed by removing non-output units from an underlying base network.
+<center><img src="./imgs/7_02.png" height=20%></center>
+
+- How to train (informally)
+  - Use a minibatch-based learning algorithm that makes small steps (e.g. Stochastic gradient descent)
+  - Each time we load an example into a minibatch, we randomly sample a different binary mask to apply to all of the input and hidden units in the network. (sampled independently)
+    - The probability of sampling is a hyperparameter fixed before training begins. (Typically, 0.8 for input units and 0.5 for hidden units)
+  - Run forward propagation, back-propagation, and the learning update as usual.
+- How to train (formally)
+  - Suppose that a mask vector $\boldsymbol{\mu}$ specifies which units to include, and $J(\boldsymbol{\theta}, \boldsymbol{\mu})$ defines the cost of the model defined by parameters $\boldsymbol{\theta}$ and mask $\boldsymbol{\mu}$.
+  - Then dropout training consists in minimizing $\mathbb{E}_\boldsymbol{\mu}J(\boldsymbol{\theta}, \boldsymbol{\mu})$.
+- Difference between bagging and dropout
+  - In bagging:
+    - The models are all independent.
+    - Each model is trained to convergence on its respective training set.
+  - In dropout:
+    - The models share parameters with each model inheriting a different subset of parameters from the parent neural network.
+    - Most models are not explicitly trained at all.
+      - A tiny fraction of the possible sub-networks are each trained for a single step, and the parameter sharing causes the remaining sub-networks to arrive at good settings of the parameters.
+
+<center><img src="./imgs/7_03.png" height=20%></center>
+
+- Difference in prediction process between bagging and dropout
+  - Bagging
+
+    - Each model $i$ produces a probability distribution $p^{(i)} (y \mid \boldsymbol{x})$.
+
+    - The arithmetic mean of all of these distributions, 
+      $$
+      \frac{1}{k} \sum^k_{i=1} p^{(i)} (y \mid \boldsymbol{x}).
+      $$
+
+  - Dropout
+
+    - Each sub-model defined by mask vector $\boldsymbol{\mu}$ defines a probability distribution $p(y \mid \boldsymbol{x}, \boldsymbol{\mu})$.
+
+    - The arithmetic mean over all masks is given by
+      $$
+      \sum_\boldsymbol{\mu} p(\boldsymbol{\mu}) p(y \mid \boldsymbol{x}, \boldsymbol{\mu}).
+      $$
+
+- Note that the above sums include an exponential number of terms.
+
+  - Thus, it is intractable to evaluate.
+  - Instead, we can approximate the inference with sampling, by averaging together the output from many masks.
+    - Even 10-20 masks are often sufficient to obtain good performance.
+
+- Using the geometric mean rather than the arithmetic mean of the predicted distributions provides a good approximation, at the cost of only one forward propagation.
+
+  - **Weight scaling inference rule**
+
+    - The unnormalized probability distribution:
+      $$
+      \tilde{p}_\text{ensemble} (y \mid \boldsymbol{x}) = \sqrt[2^d]{\prod_\boldsymbol{\mu} p(y \mid \boldsymbol{x}, \boldsymbol{\mu})}
+      $$
+      where $d$ is the number of units that may be dropped.
+
+    - Re-normalized predictions:
+      $$
+      p_\text{ensemble} (y \mid \boldsymbol{x}) = \frac{\tilde{p}_\text{ensemble} (y \mid \boldsymbol{x})}{\sum_{y'} \tilde{p}_\text{ensemble} (y \mid \boldsymbol{x})}
+      $$
+
+- Advantage of using dropout
+
+  - Computationally cheap
+    - Training phases requires only $O(n)$ computation per example per update.
+  - Dropout can be used any type of model or training procedure.
 
 ## 7.13 Adversarial Training
+
+- **Adversarial training**
+  - Even neural networks that perform at human level accuracy have a nearly 100% error rate on examples that are intentionally constructed by using an optimization procedure to search for an input $x'$ near a data point $x$ such that the model output is very different at $x'$.
+  - Adversarial training is the procedure contains training on adversarially perturbed examples from the training set.
+<center><img src="./imgs/7_04.png" height=20%></center>
+- One of the primary causes of these adversarial examples is excessive linearity.
+  - Linear functions are easy to optimize.
+  - If we change each input by $\epsilon$, then a linear function with weights $\boldsymbol{w}$ can change by as much as $\epsilon\|\boldsymbol{w}\|_1$ , which can be a very large amount if $\boldsymbol{w}$ is high-dimensional.
+    - Adversarial training discourages this highly sensitive locally linear behavior by encouraging the network to be locally constant in the neighborhood of the training data.
+- Adversarial training helps to illustrate the power of using a large function family in combination with aggressive regularization.
 
 ## 7.14 Tangent Distance, Tangent Prop, and Manifold Tangent Classifier
 
