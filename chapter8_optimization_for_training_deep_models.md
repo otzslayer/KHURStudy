@@ -198,13 +198,49 @@
   - In low-dimensional spaces, local minima are common.
   - In higher dimensional spaces, local minima are rare and saddle points are more common.
 
+- Shallow autoencoders with no nonlinearlities have global minima and saddle points but no local minima with higher cost than the global minimum.
+
+- On the saddle point :
+  - For first-order optimization algorithms that use only gradient information, the gradient can often become very small near a saddle points.
+  - Gradient descent empirically seems to be able to escape saddle points in many cases.
+  - For Newton's method, it is clear that saddle points constitute a problem.
+    - Newton's method is designed to solve for a point where the gradient is zero.
+    - It explains why second-order methods have not succeeded in replacing gradient descent for neural network training.
+      - **Saddle-free Newton method**
+
 ### 8.2.4 Cliffs and Exploding Gradients
+
+- Neural networks with many layers often have extremely steep regions resembling cliffs.
+  - The gradient update step can move the parameters extremely far, usually jumping off of the cliff structure.
+  - By using the **gradient clipping** heuristic, the most serious consequences can be avoided.
+    - The basic idea is to recall that the gradient does not specify the optimal step size, but only the optimal direction within an infinitesimal region.
 
 ### 8.2.5 Long-Term Dependencies
 
+- Another difficulty that neural network optimization algorithms must overcome arises when the computational graph becomes extremely deep.
+  - In RNN, very deep computational graphs are constructed by repeatedly applying the same operation at each time step of a long temporal sequence.
+- **Vanishing and exploding gradient problem**
+  - Suppose that a computational graph contains a path that consists of repeatedly multiplying by a matrix $\boldsymbol{W}$.
+  - Suppose that $\boldsymbol{W}$ has an eigendecomposition $\boldsymbol{W} = \boldsymbol{V}\text{diag}(\boldsymbol{\lambda}) \boldsymbol{V}^{-1}$.
+  - After $t$ steps, we obtain
+  $$
+    \boldsymbol{W}^t = (\boldsymbol{V} \text{diag}(\boldsymbol{\lambda})\boldsymbol{V}^{-1})^t = \boldsymbol{V} \text{diag}(\boldsymbol{\lambda})^t \boldsymbol{V}^{-1}.
+  $$
+  - Any eigenvalues $\lambda_i$ that are not near an absolute value of 1 will either explode or vanish.
+
 ### 8.2.6 Inexact Gradients
 
+- Most optimization algorithms are designed with the assumption that we have access to the exact gradient of Hessian matrix.
+  - In practice, we usually only have a noisy or even biased estimate of these quantities.
+- The objective function is actually intractable.
+  - When the objective function is intractable, its gradient is typically intractable as well.
+    - In such cases, we can only approximate the gradient.
+
 ### 8.2.7 Poor Correspondence between Local and Global Structure
+
+- It is possible to overcome all of these problems at a single point and still perform poorly if the direction that results in the most improvement locally does not point toward distant regions of much lower cost.
+- Much of research into the difficulties of optimization has focused on whether training arrives at a global minimum, a local minimum, or a saddle point.
+  - But, in practice, neural networks do not arrive at a critical point of any kind.
 
 ### 8.2.8 Theoretical Limits of Optimization
 
@@ -212,11 +248,126 @@
 
 ### 8.3.1 Stochastic Gradient Descent
 
+- Stochastic gradient descent (SGD) and its variants are probably the most used optimization algorithms for machine learning.
+- It is possible to obtain an unbiased estimate of the gradient by taking the average gradient on a minibatch of $m$ examples drawn i.i.d from the data generating distribution.
+
+>- **Algorithm 8.1** Stochastic gradient descent (SGD) update at training iteration $k$  
+>&emsp;**Require:** Learning rate $\epsilon_k$.  
+>&emsp;**Require:** Initial parameter $\boldsymbol{\theta}$  
+>&emsp;&emsp;**while** stopping criterion not met **do**  
+>&emsp;&emsp;&emsp;Sample a minibatch of $m$ examples from the training set $\{\boldsymbol{x}^{(1)}, \cdots, \boldsymbol{x}^{(m)}\}$ with corresponding targets $\boldsymbol{y}^{(i)}$.  
+>&emsp;&emsp;&emsp;Compute gradient estimate: $\hat{\boldsymbol{g}} \leftarrow +\frac{1}{m} \nabla_\boldsymbol{\theta} \sum_i L(f(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}), \boldsymbol{y}^{(i)})$  
+>&emsp;&emsp;&emsp;Apply update: $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \epsilon \hat{\boldsymbol{g}}$  
+>&emsp;&emsp;**end while**
+
+- In practice, it is necessary to gradually decrease the learning rate over time.
+  - It is common to decay the learning rate linearly until iteration $\tau$:
+    $$
+    \epsilon_k = (1-\alpha) \epsilon_0 + \alpha \epsilon_\tau
+    $$
+    with $\alpha = \frac{k}{\tau}$.
+    - After iteration $\tau$, it is common to leave $\epsilon$ constant.
+    - When using the linear schedule, the parameters to choose are $\epsilon_0$, \epsilon_\tau$, and $\tau$.
+      - Usually $\tau$ may be set to the number of iterations required to make a few hundred passes through the training set.
+      - Usually $\epsilon_\tau$ should be set to roughly 1% the value of $\epsilon_0$.
+- A sufficient condition to guarantee convergence of SGD is that $\sum \epsilon_k = \infty$ and $\sum \epsilon_k^2 < \infty$.
+- The most important property of SGD :
+  - Computation time per update does not grow with the number of training examples.
+    - This allows convergence even when the number of training examples become very large.
+
+
 ### 8.3.2 Momentum
+
+- While SGD remains a very popular optimization strategy, learning with it can be slow.
+  - Momentum is designed to accelerate learning, especially in the face of high curvature, small but consistent gradients, or noisy gradients.
+  - The momentum algorithm accumulates an exponentially decaying moving average of past gradients and continues to move in their direction.
+- Formal definition
+  - Let $v$ be the velocity.
+    - The velocity is set to an exponentially decaying average of the negative gradient.
+  - The name **momentum** derives from a physical analogy, in which the negative gradient is a force moving a particle through parameter space.
+    - Momentum in physics is mass times velocity.
+    - We assume unit mass, so the velocity vector $\boldsymbol{v}$ may also be regarded as the momentum of the particle.
+  - A hyperparameter $\alpha \in [0, 1)$ determines how quickly the contributions of previous gradients exponentially decay.
+  - The update rules is given by :
+    $$
+      \begin{aligned}
+      \boldsymbol{v} &\leftarrow \alpha \boldsymbol{v} - \epsilon\nabla_\boldsymbol{\theta} \left(\frac{1}{m} \sum^m_{i=1} L(\boldsymbol{f}(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}), \boldsymbol{y}^{(i)}) \right), \\
+      \theta &\leftarrow \boldsymbol{\theta} + \boldsymbol{v}
+      \end{aligned}
+    $$
+    - The velocity $\boldsymbol{v}$ accumulates the gradient element $\nabla_\boldsymbol{\theta} \left(\frac{1}{m} \sum^m_{i=1} L(\boldsymbol{f}(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}), \boldsymbol{y}^{(i)}) \right)$.
+    - The larger $\alpha$ is relative to $\epsilon$, the more previous gradients affect the current direction.
+- If the momentum algorithm always observes gradient $\boldsymbol{g}$, then it will accelerate in the direction of $-\boldsymbol{g}$, until reaching a terminal velocity where the size of each step is $\frac{\epsilon \|\boldsymbol{g}\|}{1-\alpha}$.
+  - For example, $\alpha = .9$ corresponds to multiplying the maximum speed by 10 relative to the gradient descent algorithm.
+    - Common values of $\alpha$ used in practice include .5, .9, and .99.
+
+>- **Algorithm 8.2** Stochastic gradient descent (SGD) with momentum  
+>&emsp;**Require:** Learning rate $\epsilon$, momentum parameter $\alpha$.  
+>&emsp;**Require:** Initial parameter $\boldsymbol{\theta}$, initial velocity $\boldsymbol{v}$.  
+>&emsp;&emsp;**while** stopping criterion not met **do**  
+>&emsp;&emsp;&emsp;Sample a minibatch of $m$ examples from the training set $\{\boldsymbol{x}^{(1)}, \cdots, \boldsymbol{x}^{(m)}\}$ with corresponding targets $\boldsymbol{y}^{(i)}$.  
+>&emsp;&emsp;&emsp;Compute gradient estimate: $\hat{\boldsymbol{g}} \leftarrow \frac{1}{m} \nabla_\boldsymbol{\theta} \sum_i L(f(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}), \boldsymbol{y}^{(i)})$  
+>&emsp;&emsp;&emsp;Compute velocity update: $\boldsymbol{v} \leftarrow \alpha\boldsymbol{v} - \epsilon \boldsymbol{g}$  
+>&emsp;&emsp;&emsp;Apply update: $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} + \boldsymbol{v}$  
+>&emsp;&emsp;**end while**
 
 ### 8.3.3 Nesterov Momentum
 
+- The update rules is given by :
+  $$
+    \begin{aligned}
+    \boldsymbol{v} &\leftarrow \alpha \boldsymbol{v} - \epsilon\nabla_\boldsymbol{\theta} \left(\frac{1}{m} \sum^m_{i=1} L(\boldsymbol{f}(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}), \boldsymbol{y}^{(i)}) \right), \\
+    \theta &\leftarrow \boldsymbol{\theta} + \boldsymbol{v}
+    \end{aligned}
+  $$
+  where the parameters $\alpha$ and $\epsilon$ play a similar role as in the standard momentum method.
+    - The difference between Nesterov momentum and standard momentum is where the gradient is evaluated.
+    - With Nesterov momentum the gradient is evaluated after the current velocity is applied.
+    - In the stochastic gradient case, Nesterov momentum does not improve the rate of convergence.
+
+>- **Algorithm 8.3** Stochastic gradient descent (SGD) with Nesterov momentum  
+>&emsp;**Require:** Learning rate $\epsilon$, momentum parameter $\alpha$.  
+>&emsp;**Require:** Initial parameter $\boldsymbol{\theta}$, initial velocity $\boldsymbol{v}$.  
+>&emsp;&emsp;**while** stopping criterion not met **do**  
+>&emsp;&emsp;&emsp;Sample a minibatch of $m$ examples from the training set $\{\boldsymbol{x}^{(1)}, \cdots, \boldsymbol{x}^{(m)}\}$ with corresponding targets $\boldsymbol{y}^{(i)}$.  
+>&emsp;&emsp;&emsp;Apply interim update: $\tilde{\boldsymbol{\theta}} \leftarrow \boldsymbol{\theta} + \alpha \boldsymbol{v}$  
+>&emsp;&emsp;&emsp;Compute gradient estimate (at interim point):  ${\boldsymbol{g}} \leftarrow \frac{1}{m} \nabla_\boldsymbol{\tilde{\theta}} \sum_i L(f(\boldsymbol{x}^{(i)}; \boldsymbol{\tilde{\theta}}), \boldsymbol{y}^{(i)})$  
+>&emsp;&emsp;&emsp;Compute velocity update: $\boldsymbol{v} \leftarrow \alpha\boldsymbol{v} - \epsilon \boldsymbol{g}$  
+>&emsp;&emsp;&emsp;Apply update: $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} + \boldsymbol{v}$  
+>&emsp;&emsp;**end while**
+
 ## 8.4 Parameter Initialization Strategies
+
+- Types of initialization
+  - Non-iterative optimization requires no initialization
+    - Simply solve for a solution point
+  - Iterative but converge regardless of initialization
+    - Acceptable solutions in acceptable time
+  - Iterative but affected by choice of initialization
+    - Deep learning algorithms are strongly affected by the choice of initialization.
+    - The initial point can determine whether the algorithm converges at all or not.
+      - When learning does converge, the initial point can determine how quickly learning converges and whether it converges to a point with high or low cost.
+    - The initial point can affect the generalization as well.
+
+- Modern initialization strategies
+  - Simple and heuristic
+  - Based on achieving some nice properties when the network initialized.
+  - Some initial points may be beneficial from the viewpoint of optimization but detrimental from the viewpoint of generalization.
+
+- Break symmetry
+  - The only property known with complete certainty is that the initial parameters need to "break symmetry" between different units.
+  - If two hidden units with the same activation function are connected to the same inputs, then these units must have different initial parameters.
+  - It is usually best to initialize each unit to compute a different function from all of the other units.
+  - This motivates random initialization of the parameters.
+    - Random initialization from a high-entropy distribution over a high-dimensional space is computationally cheaper and unlikely to assign any units to compute the same function as each other.
+
+- Choice of biases
+  - Typically, the biases for each unit to heuristically chosen constants, and initialize only the weights randomly.
+    - Extra parameters are usually set to heuristically chosen constants much like the biases are.
+
+- Weight initialization
+  - Weights are initialized randomly from a Gaussian or uniform distribution.
+  - Larger initial weights will yield a stronger symmetry breaking effect, helping to avoid redundant units.
 
 ## 8.5 Algorithms with Adaptive Learning Rates
 
@@ -248,7 +399,4 @@
 
 ### 8.7.5 Designing Models to Aid Optimization
 
-### 8.7.6 Continuation Meethods and Curriculum Learning
-
-
-
+### 8.7.6 Continuation Methods and Curriculum Learning
